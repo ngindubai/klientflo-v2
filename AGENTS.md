@@ -51,7 +51,11 @@ Phase 1, but the data model is multi-agent-ready.
   delete (event-actions), per-type colour chips, and generateEventInvite for a
   WhatsApp invite message. Note: calendar components take a `refDate` prop (not
   `ref`, which the react-hooks/refs lint rule reserves).
-- Chunk 10 — Sales & rental pipelines.
+- **Chunk 10 ✅ Sales & rental pipelines** — kanban boards at /pipeline
+  (?type=sale|rental tabs) with stage columns + deal cards; move via per-card
+  stage <select> (setDealStage), create via DealForm (createDeal). Added a
+  "Pipeline" nav item (KanbanSquare icon) — a justified extension of the spec
+  nav list.
 - Chunk 11 — Documents (S3).
 - Chunk 12 — WhatsApp Business Cloud API.
 - Chunk 13 — Voice (STT, voice-note pipeline, dictation).

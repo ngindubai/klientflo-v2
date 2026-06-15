@@ -16,6 +16,7 @@ export const NAV_ITEMS = [
   { label: "WhatsApp Inbox", href: "/inbox", icon: "inbox" },
   { label: "Clients", href: "/clients", icon: "clients" },
   { label: "Properties", href: "/properties", icon: "properties" },
+  { label: "Pipeline", href: "/pipeline", icon: "pipeline" },
   { label: "Calendar", href: "/calendar", icon: "calendar" },
   { label: "Documents", href: "/documents", icon: "documents" },
   { label: "Settings", href: "/settings", icon: "settings" },
