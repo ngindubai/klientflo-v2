@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { runCommand } from "@/server/ai/command";
 import type { CommandResult } from "@/server/ai/command-types";
 import { CommandResultPanel } from "@/components/ai/command-result";
+import { useSpeechRecognition } from "@/components/voice/use-speech-recognition";
 
 // Rotating examples that hint at what the assistant can do.
 const EXAMPLES = [
@@ -27,6 +28,7 @@ export function CommandBar() {
   const [result, setResult] = useState<CommandResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+  const speech = useSpeechRecognition(setValue);
 
   useEffect(() => {
     if (value) return;
@@ -84,8 +86,19 @@ export function CommandBar() {
           </kbd>
           <button
             type="button"
-            title="Voice input — coming in Chunk 13"
-            className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+            onClick={() => speech.toggle(value)}
+            disabled={!speech.supported}
+            title={
+              speech.supported
+                ? "Voice input"
+                : "Voice input isn't supported in this browser"
+            }
+            className={cn(
+              "rounded-lg p-2 transition-colors",
+              speech.listening
+                ? "animate-pulse bg-urgency-5/10 text-urgency-5"
+                : "text-foreground-muted hover:bg-surface-muted hover:text-foreground disabled:opacity-40",
+            )}
             aria-label="Voice input"
           >
             <Mic className="size-5" />

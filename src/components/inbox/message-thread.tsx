@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Mic, ArrowLeft } from "lucide-react";
 import { UrgencyBadge } from "@/components/dashboard/urgency-badge";
 import { VoiceReviewButton } from "@/components/inbox/voice-review-button";
+import { TranscribeButton } from "@/components/inbox/transcribe-button";
 import { ReplyComposer } from "@/components/inbox/reply-composer";
 import { formatTime } from "@/lib/utils";
 import { humanizeEnum } from "@/lib/constants";
@@ -100,12 +101,19 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
                   <span className="flex items-center gap-1 text-xs font-medium opacity-80">
                     <Mic className="size-3" /> Voice note
                   </span>
-                  <p className="mt-1 italic">
-                    {m.transcription ?? "Awaiting transcription (Chunk 13)"}
-                  </p>
-                  {m.direction === "inbound" && !m.reviewed && (
-                    <VoiceReviewButton messageId={m.id} />
+                  {m.transcription ? (
+                    <p className="mt-1 italic">{m.transcription}</p>
+                  ) : (
+                    <p className="mt-1 italic opacity-70">Not transcribed yet</p>
                   )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {m.direction === "inbound" && !m.transcription && (
+                      <TranscribeButton messageId={m.id} />
+                    )}
+                    {m.direction === "inbound" && !m.reviewed && (
+                      <VoiceReviewButton messageId={m.id} />
+                    )}
+                  </div>
                 </div>
               ) : m.type === "image" ? (
                 <p>📷 Photo{m.body ? ` — ${m.body}` : ""}</p>

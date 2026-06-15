@@ -44,6 +44,27 @@ export async function sendText(to: string, body: string): Promise<SendResult> {
   return { externalId: data.messages?.[0]?.id ?? `wamid-${Date.now()}`, mock: false };
 }
 
+/** Download inbound media (voice/image/document) by its WhatsApp media id. */
+export async function downloadMedia(
+  mediaId: string,
+): Promise<{ data: Buffer; mime: string } | null> {
+  if (!isWhatsAppConfigured()) return null;
+  const auth = { Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}` };
+
+  const metaRes = await fetch(
+    `https://graph.facebook.com/${GRAPH_VERSION}/${mediaId}`,
+    { headers: auth },
+  );
+  if (!metaRes.ok) return null;
+  const meta = await metaRes.json();
+  if (!meta.url) return null;
+
+  const fileRes = await fetch(meta.url, { headers: auth });
+  if (!fileRes.ok) return null;
+  const data = Buffer.from(await fileRes.arrayBuffer());
+  return { data, mime: meta.mime_type ?? "audio/ogg" };
+}
+
 // --- Webhook verification & parsing -------------------------------------
 
 /** Verify the GET webhook handshake; returns the challenge to echo, or null. */

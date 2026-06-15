@@ -68,6 +68,10 @@ Phase 1, but the data model is multi-agent-ready.
   conversation list, message thread (bubbles, AI summary, voice review), and a
   reply composer (sendReply via adapter + suggestReply AI draft). Runs in demo
   mode without Meta creds.
-- Chunk 13 — Voice (STT, voice-note pipeline, dictation).
+- **Chunk 13 ✅ Voice** — browser Web Speech API hook (use-speech-recognition)
+  powers the command-bar mic and inbox dictation (no server keys). Server STT
+  adapter (src/server/speech.ts, OpenAI Whisper when configured) + WhatsApp
+  downloadMedia drive transcribeVoiceNote (download→transcribe→re-analyse).
+  polishMessage rewrites dictated text professionally (Claude, or light mock).
 - Chunk 14 — AI auto-reply engine + quiet hours.
 - Chunk 15 — Settings, auth, polish.
