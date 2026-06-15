@@ -56,7 +56,11 @@ Phase 1, but the data model is multi-agent-ready.
   stage <select> (setDealStage), create via DealForm (createDeal). Added a
   "Pipeline" nav item (KanbanSquare icon) — a justified extension of the spec
   nav list.
-- Chunk 11 — Documents (S3).
+- **Chunk 11 ✅ Documents** — upload (multipart server action) + preview via
+  /api/files/[id]; pluggable StorageAdapter (local .uploads now, S3-ready
+  behind getStorage()). Docs linked to client/deal/property, grouped by
+  category with expiry badges; getMissingDocuments() powers missing-doc alerts
+  (required client docs per deal type). Delete removes blob + row.
 - Chunk 12 — WhatsApp Business Cloud API.
 - Chunk 13 — Voice (STT, voice-note pipeline, dictation).
 - Chunk 14 — AI auto-reply engine + quiet hours.

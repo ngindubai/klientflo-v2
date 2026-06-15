@@ -151,6 +151,19 @@ export const DOCUMENT_TYPES = [
 ] as const;
 export type DocumentType = (typeof DOCUMENT_TYPES)[number];
 
+export const DOCUMENT_CATEGORIES = ["client", "property", "transaction"] as const;
+export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
+
+/** The document types valid for each category, for category-aware forms. */
+export const DOCUMENT_TYPES_BY_CATEGORY: Record<
+  DocumentCategory,
+  readonly string[]
+> = {
+  client: CLIENT_DOCUMENT_TYPES,
+  property: PROPERTY_DOCUMENT_TYPES,
+  transaction: TRANSACTION_DOCUMENT_TYPES,
+};
+
 // --- Property sources ----------------------------------------------------
 
 export const PROPERTY_SOURCES = ["property_finder", "bayut", "manual"] as const;
