@@ -60,7 +60,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: #0b1020;
     --surface: #131a2e;
     --surface-muted: #1b2440;
@@ -74,6 +74,22 @@
     --accent-foreground: #04130c;
     --accent-muted: #102a1f;
   }
+}
+
+/* Explicit dark theme (toggle), overrides system preference. */
+:root.dark {
+  --background: #0b1020;
+  --surface: #131a2e;
+  --surface-muted: #1b2440;
+  --foreground: #e6e9f2;
+  --foreground-muted: #94a3b8;
+  --border: #283150;
+  --primary: #818cf8;
+  --primary-foreground: #0b1020;
+  --primary-muted: #1e2547;
+  --accent: #34d399;
+  --accent-foreground: #04130c;
+  --accent-muted: #102a1f;
 }
 
 * {

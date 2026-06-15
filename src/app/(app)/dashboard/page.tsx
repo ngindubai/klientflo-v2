@@ -207,7 +207,7 @@ export default async function DashboardPage() {
           empty="No active deals right now."
         >
           {d.dealsNeedingAttention.map((deal) => (
-            <WidgetRow key={deal.id}>
+            <WidgetRow key={deal.id} href={`/pipeline?type=${deal.type}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate font-medium">

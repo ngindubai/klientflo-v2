@@ -1,10 +1,18 @@
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
 
-export async function getConversations() {
+export type InboxFilters = { minUrgency?: number; category?: string };
+
+export async function getConversations(filters: InboxFilters = {}) {
   const agent = await getCurrentAgent();
   return prisma.conversation.findMany({
-    where: { agentId: agent.id },
+    where: {
+      agentId: agent.id,
+      ...(filters.minUrgency ? { urgency: { gte: filters.minUrgency } } : {}),
+      ...(filters.category
+        ? { classification: filters.category as never }
+        : {}),
+    },
     orderBy: [{ lastMessageAt: "desc" }, { updatedAt: "desc" }],
     include: {
       client: { select: { id: true, name: true } },

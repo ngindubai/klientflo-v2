@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
-import { DealCard } from "@/components/pipeline/deal-card";
+import { PipelineBoard } from "@/components/pipeline/pipeline-board";
 import { getPipeline, stagesFor } from "@/server/deals";
-import { formatAED } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { DealType } from "@/lib/constants";
 
@@ -62,36 +61,22 @@ export default async function PipelinePage({
           start one.
         </div>
       ) : (
-        <div className="-mx-4 overflow-x-auto px-4 pb-4 lg:-mx-6 lg:px-6">
-          <div className="flex gap-3">
-            {columns.map((col) => (
-              <div key={col.stage} className="flex w-72 shrink-0 flex-col">
-                <div className="mb-2 flex items-center justify-between gap-2 px-1">
-                  <h2 className="text-sm font-semibold">{col.label}</h2>
-                  <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-foreground-muted tabular-nums">
-                    {col.deals.length}
-                  </span>
-                </div>
-                {col.total > 0 && (
-                  <p className="mb-2 px-1 text-xs text-foreground-muted tabular-nums">
-                    {formatAED(col.total)}
-                  </p>
-                )}
-                <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-surface-muted/40 p-2">
-                  {col.deals.length === 0 ? (
-                    <p className="px-1 py-4 text-center text-xs text-foreground-muted">
-                      —
-                    </p>
-                  ) : (
-                    col.deals.map((deal) => (
-                      <DealCard key={deal.id} deal={deal} stages={stages} />
-                    ))
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PipelineBoard
+          columns={columns.map((c) => ({
+            stage: c.stage,
+            label: c.label,
+            deals: c.deals.map((d) => ({
+              id: d.id,
+              stage: d.stage,
+              amount: d.amount,
+              client: d.client ? { id: d.client.id, name: d.client.name } : null,
+              property: d.property
+                ? { id: d.property.id, title: d.property.title }
+                : null,
+            })),
+          }))}
+          stages={stages}
+        />
       )}
     </>
   );

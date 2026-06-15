@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { CommandBar } from "@/components/ai/command-bar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppShell({
   children,
@@ -33,6 +34,7 @@ export function AppShell({
             <Menu className="size-5" />
           </button>
           <CommandBar />
+          <ThemeToggle />
         </header>
 
         <main className="flex-1 px-4 py-6 lg:px-6">{children}</main>

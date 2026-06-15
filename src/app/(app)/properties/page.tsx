@@ -2,8 +2,10 @@ import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
-import { RefreshListingsButton } from "@/components/properties/refresh-listings-button";
+import { RefreshSources } from "@/components/properties/refresh-sources";
 import { getProperties } from "@/server/properties";
+import { getLatestScrapeJob } from "@/server/scrape";
+import { getCurrentAgent } from "@/server/agent";
 import { formatAED } from "@/lib/utils";
 import { humanizeEnum } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -22,7 +24,18 @@ export default async function PropertiesPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+  const agent = await getCurrentAgent();
   const properties = await getProperties({ q });
+  const latestJob = await getLatestScrapeJob(agent.id);
+  const initialJob = latestJob
+    ? {
+        id: latestJob.id,
+        status: latestJob.status,
+        progress: latestJob.progress,
+        imported: latestJob.imported,
+        message: latestJob.message,
+      }
+    : null;
 
   return (
     <>
@@ -31,7 +44,7 @@ export default async function PropertiesPage({
         description="Your portfolio with AI matching and one-click information packs."
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <RefreshListingsButton />
+            <RefreshSources initial={initialJob} />
             <Link
               href="/properties/new"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
