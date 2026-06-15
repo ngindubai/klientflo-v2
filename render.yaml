@@ -1,0 +1,86 @@
+# Render Blueprint for Klientflo.
+# In Render: New + → Blueprint → connect this repo. Render reads this file to
+# provision a managed PostgreSQL database and a Next.js web service, wiring
+# DATABASE_URL automatically. Secrets marked `sync: false` are filled in the
+# dashboard; the app runs in demo mode until you add them.
+#
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: klientflo-db
+    plan: free
+    region: frankfurt
+    databaseName: klientflo
+    user: klientflo
+
+services:
+  - type: web
+    name: klientflo
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: claude/great-carson-8mjbfm
+    healthCheckPath: /login
+    # --prod=false ensures dev tooling (prisma, typescript, tailwind) is
+    # installed for the build; postinstall runs `prisma generate`.
+    buildCommand: pnpm install --prod=false && pnpm prisma migrate deploy && pnpm build
+    startCommand: pnpm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Wired automatically from the managed database above.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: klientflo-db
+          property: connectionString
+      # Session cookie signing secret — generated once by Render.
+      - key: AUTH_SECRET
+        generateValue: true
+
+      # --- Set these in the Render dashboard (Environment tab) ---
+      # Login password (defaults to "klientflo" if left unset).
+      - key: APP_PASSWORD
+        sync: false
+
+      # AI — Anthropic Claude
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        sync: false
+
+      # Voice — speech-to-text
+      - key: SPEECH_TO_TEXT_PROVIDER
+        sync: false
+      - key: SPEECH_TO_TEXT_API_KEY
+        sync: false
+
+      # WhatsApp Business Cloud API
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_BUSINESS_ACCOUNT_ID
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+
+      # Storage — AWS S3 (documents persist here; local disk is ephemeral on Render)
+      - key: AWS_REGION
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+
+      # Property portals
+      - key: BROKER_NUMBER
+        sync: false
+
+      # Public app URL (set to your Render URL after the first deploy)
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
