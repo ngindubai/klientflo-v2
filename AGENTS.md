@@ -30,7 +30,10 @@ Phase 1, but the data model is multi-agent-ready.
   extract requirements. Graceful heuristic mock in src/server/ai/mock.ts runs
   the app without ANTHROPIC_API_KEY. Services in src/server/ai/*; persist via
   analyzeAndPersistConversation. `pnpm ai:smoke` validates it.
-- Chunk 6 — Functional AI command bar (Claude tool-use).
+- **Chunk 6 ✅ Functional AI command bar** — Claude tool-use (src/server/ai/
+  command.ts) maps NL commands to DB-backed tools (search clients/properties,
+  show urgent/pending/today, move_deal, draft_reply, open_page). Heuristic mock
+  router works without a key. Results render inline via CommandResultPanel.
 - Chunk 7 — Clients & lead management.
 - Chunk 8 — Properties & AI matching + info pack generator.
 - Chunk 9 — Calendar.

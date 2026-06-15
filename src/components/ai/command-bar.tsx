@@ -1,28 +1,33 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Sparkles, Mic, ArrowUp, X } from "lucide-react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Sparkles, Mic, ArrowUp, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { runCommand } from "@/server/ai/command";
+import type { CommandResult } from "@/server/ai/command-types";
+import { CommandResultPanel } from "@/components/ai/command-result";
 
-// Rotating examples that hint at what the assistant will be able to do.
+// Rotating examples that hint at what the assistant can do.
 const EXAMPLES = [
-  'Show urgent WhatsApps',
-  'Find 2-bed apartments in Dubai Marina under AED 2M',
-  'Book a viewing tomorrow at 4pm',
-  'Send this client the information pack',
-  'Summarise this conversation',
-  "Move this lead to viewing booked",
-  "Send top 3 matching properties",
+  "Show urgent WhatsApps",
+  "Find 2-bed apartments in Dubai Marina under AED 2M",
+  "Show today's meetings",
+  "Move Ahmed Khan to viewing booked",
   "Reply saying I'll confirm availability shortly",
+  "Show pending replies",
+  "Find hot buyers",
+  "Open the inbox",
 ];
 
 export function CommandBar() {
+  const router = useRouter();
   const [value, setValue] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [response, setResponse] = useState<string | null>(null);
+  const [result, setResult] = useState<CommandResult | null>(null);
+  const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Cycle the placeholder while the field is empty.
   useEffect(() => {
     if (value) return;
     const t = setInterval(
@@ -32,7 +37,6 @@ export function CommandBar() {
     return () => clearInterval(t);
   }, [value]);
 
-  // Focus shortcut: Cmd/Ctrl+K.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -47,13 +51,19 @@ export function CommandBar() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const command = value.trim();
-    if (!command) return;
-    // The AI brain (intent → action) is wired up in Chunks 5–6. For now we
-    // acknowledge the command so the interaction is fully in place.
-    setResponse(
-      `Got it — “${command}”. I'll be able to act on this once the AI assistant is connected (Chunks 5–6).`,
-    );
+    if (!command || isPending) return;
     setValue("");
+    startTransition(async () => {
+      const res = await runCommand(command);
+      if (res.kind === "navigate") {
+        setResult(null);
+        router.push(res.href);
+        return;
+      }
+      setResult(res);
+      // Refresh server components in case a command mutated data (e.g. move_deal).
+      router.refresh();
+    });
   }
 
   return (
@@ -82,32 +92,26 @@ export function CommandBar() {
           </button>
           <button
             type="submit"
-            disabled={!value.trim()}
+            disabled={!value.trim() || isPending}
             className={cn(
               "rounded-lg p-2 transition-colors",
-              value.trim()
+              value.trim() && !isPending
                 ? "bg-primary text-primary-foreground hover:opacity-90"
                 : "bg-surface-muted text-foreground-muted",
             )}
             aria-label="Send command"
           >
-            <ArrowUp className="size-5" />
+            {isPending ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <ArrowUp className="size-5" />
+            )}
           </button>
         </div>
       </form>
 
-      {response && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 flex items-start gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3 text-sm shadow-lg">
-          <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
-          <p className="flex-1 text-foreground-muted">{response}</p>
-          <button
-            onClick={() => setResponse(null)}
-            className="rounded p-0.5 text-foreground-muted hover:bg-surface-muted"
-            aria-label="Dismiss"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
+      {result && (
+        <CommandResultPanel result={result} onClose={() => setResult(null)} />
       )}
     </div>
   );
