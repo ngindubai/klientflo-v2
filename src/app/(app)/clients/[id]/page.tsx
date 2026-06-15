@@ -7,10 +7,13 @@ import {
   FileText,
   CalendarDays,
 } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { UrgencyBadge } from "@/components/dashboard/urgency-badge";
+import { MatchBadge } from "@/components/properties/match-badge";
 import { AutoFillButton } from "@/components/clients/auto-fill-button";
 import { getClient } from "@/server/clients";
+import { getMatchingProperties } from "@/server/matching";
 import { formatAED, formatTime } from "@/lib/utils";
 import { humanizeEnum } from "@/lib/constants";
 
@@ -24,6 +27,7 @@ export default async function ClientDetailPage({
   const { id } = await params;
   const client = await getClient(id);
   if (!client) notFound();
+  const propertyMatches = await getMatchingProperties(id);
 
   const requirements: [string, string | null][] = [
     ["Type", client.clientType ? humanizeEnum(client.clientType) : null],
@@ -110,6 +114,40 @@ export default async function ClientDetailPage({
 
         {/* Right column: related records */}
         <div className="space-y-4 lg:col-span-2">
+          <Card>
+            <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+              <Building2 className="size-4 text-foreground-muted" />
+              <h2 className="text-sm font-semibold">Recommended properties</h2>
+            </div>
+            {propertyMatches.length === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-foreground-muted">
+                No matching properties in the portfolio yet.
+              </p>
+            ) : (
+              <ul className="divide-y divide-border p-2">
+                {propertyMatches.map(({ property, match }) => (
+                  <li key={property.id}>
+                    <Link
+                      href={`/properties/${property.id}`}
+                      className="block rounded-lg px-2 py-2.5 hover:bg-surface-muted"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-sm font-medium">{property.title}</span>
+                        <MatchBadge score={match.score} />
+                      </div>
+                      <p className="mt-0.5 flex items-center justify-between gap-2 text-xs text-foreground-muted">
+                        <span className="truncate">
+                          {match.reasons.join(" · ") || "Possible fit"}
+                        </span>
+                        <span className="shrink-0 tabular-nums">{formatAED(property.price)}</span>
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
           <RelatedCard title="Conversations" icon={MessageSquare} count={client.conversations.length}>
             {client.conversations.map((c) => (
               <li key={c.id} className="flex items-start gap-3 px-2 py-2.5">

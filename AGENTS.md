@@ -40,7 +40,12 @@ Phase 1, but the data model is multi-agent-ready.
   populateClientFromConversations() (src/server/ai/populate.ts) runs the Chunk 5
   analysis over a client's conversations and fills empty requirement fields;
   exposed as the "Auto-fill from WhatsApp" action.
-- Chunk 8 — Properties & AI matching + info pack generator.
+- **Chunk 8 ✅ Properties & AI matching** — portfolio list/detail/new/edit;
+  matchScore() engine (src/server/matching.ts) scores client↔property both ways
+  with reasons (shown on client + property detail). Info-pack generator
+  (src/server/info-pack.ts → generateInfoPack) builds a WhatsApp-ready message +
+  attachments. Portal import behind ListingSource adapters (Property Finder /
+  Bayut stubs) with daily-refresh + expiry detection (refreshListings).
 - Chunk 9 — Calendar.
 - Chunk 10 — Sales & rental pipelines.
 - Chunk 11 — Documents (S3).
