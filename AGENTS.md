@@ -34,7 +34,12 @@ Phase 1, but the data model is multi-agent-ready.
   command.ts) maps NL commands to DB-backed tools (search clients/properties,
   show urgent/pending/today, move_deal, draft_reply, open_page). Heuristic mock
   router works without a key. Results render inline via CommandResultPanel.
-- Chunk 7 — Clients & lead management.
+- **Chunk 7 ✅ Clients & lead management** — list (search) / detail / new / edit
+  with the full requirement fields; ClientForm (create+edit) via server actions;
+  detail shows linked conversations/deals/documents/events. Auto-population:
+  populateClientFromConversations() (src/server/ai/populate.ts) runs the Chunk 5
+  analysis over a client's conversations and fills empty requirement fields;
+  exposed as the "Auto-fill from WhatsApp" action.
 - Chunk 8 — Properties & AI matching + info pack generator.
 - Chunk 9 — Calendar.
 - Chunk 10 — Sales & rental pipelines.
