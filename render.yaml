@@ -1,14 +1,15 @@
 # Render Blueprint for Klientflo.
 # In Render: New + → Blueprint → connect this repo. Render reads this file to
-# provision a managed PostgreSQL database and a Next.js web service, wiring
-# DATABASE_URL automatically. Secrets marked `sync: false` are filled in the
-# dashboard; the app runs in demo mode until you add them.
+# provision a managed PostgreSQL database (paid plan — Render allows only one
+# free DB per account) and a Next.js web service, wiring DATABASE_URL
+# automatically. Secrets marked `sync: false` are filled in the dashboard; the
+# app runs in demo mode until you add them.
 #
 # Docs: https://render.com/docs/blueprint-spec
 
 databases:
   - name: klientflo-db
-    plan: free
+    plan: basic-256mb
     region: frankfurt
     databaseName: klientflo
     user: klientflo
