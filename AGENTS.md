@@ -61,7 +61,13 @@ Phase 1, but the data model is multi-agent-ready.
   behind getStorage()). Docs linked to client/deal/property, grouped by
   category with expiry badges; getMissingDocuments() powers missing-doc alerts
   (required client docs per deal type). Delete removes blob + row.
-- Chunk 12 — WhatsApp Business Cloud API.
+- **Chunk 12 ✅ WhatsApp Business Cloud API** — adapter (src/server/whatsapp.ts:
+  sendText real+mock, parseWebhook, verifyWebhookChallenge/Signature). Webhook
+  at /api/whatsapp/webhook (GET verify, POST ingest). ingestInbound upserts
+  conversation + message + auto-runs AI analysis. Inbox UI (/inbox?c=) with
+  conversation list, message thread (bubbles, AI summary, voice review), and a
+  reply composer (sendReply via adapter + suggestReply AI draft). Runs in demo
+  mode without Meta creds.
 - Chunk 13 — Voice (STT, voice-note pipeline, dictation).
 - Chunk 14 — AI auto-reply engine + quiet hours.
 - Chunk 15 — Settings, auth, polish.
