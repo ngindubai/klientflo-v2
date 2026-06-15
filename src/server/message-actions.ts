@@ -48,6 +48,45 @@ export async function sendReply(conversationId: string, body: string) {
   revalidatePath("/dashboard");
 }
 
+/** Approve a pending AI-drafted reply: send it and mark it sent. */
+export async function approveDraft(messageId: string) {
+  const agent = await getCurrentAgent();
+  const message = await prisma.message.findFirst({
+    where: { id: messageId, agentId: agent.id, status: "pending" },
+    include: { conversation: true },
+  });
+  if (!message) throw new Error("Draft not found.");
+
+  let externalId: string | null = null;
+  let status: "sent" | "failed" = "sent";
+  try {
+    externalId = (await sendText(message.conversation.contactPhone, message.body ?? "")).externalId;
+  } catch (err) {
+    console.error("[whatsapp] send failed:", err);
+    status = "failed";
+  }
+
+  await prisma.message.update({
+    where: { id: messageId },
+    data: { status, externalId },
+  });
+  await prisma.conversation.update({
+    where: { id: message.conversationId },
+    data: { awaitingReply: false, lastMessageAt: new Date() },
+  });
+  revalidatePath("/inbox");
+  revalidatePath("/dashboard");
+}
+
+/** Discard a pending AI-drafted reply without sending. */
+export async function discardDraft(messageId: string) {
+  const agent = await getCurrentAgent();
+  await prisma.message.deleteMany({
+    where: { id: messageId, agentId: agent.id, status: "pending" },
+  });
+  revalidatePath("/inbox");
+}
+
 /** Mark a voice note as reviewed. */
 export async function markVoiceReviewed(messageId: string) {
   const agent = await getCurrentAgent();

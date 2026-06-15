@@ -3,6 +3,7 @@ import { Mic, ArrowLeft } from "lucide-react";
 import { UrgencyBadge } from "@/components/dashboard/urgency-badge";
 import { VoiceReviewButton } from "@/components/inbox/voice-review-button";
 import { TranscribeButton } from "@/components/inbox/transcribe-button";
+import { DraftApprovalButtons } from "@/components/inbox/draft-approval-buttons";
 import { ReplyComposer } from "@/components/inbox/reply-composer";
 import { formatTime } from "@/lib/utils";
 import { humanizeEnum } from "@/lib/constants";
@@ -16,6 +17,7 @@ type Message = {
   transcription: string | null;
   reviewed: boolean;
   status: string;
+  aiGenerated: boolean;
   createdAt: Date;
 };
 
@@ -80,7 +82,23 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
 
       {/* Messages */}
       <div className="flex-1 space-y-2 overflow-y-auto p-3">
-        {conversation.messages.map((m) => (
+        {conversation.messages.map((m) => {
+          // Pending AI-drafted replies render as an approval card, not a bubble.
+          if (m.direction === "outbound" && m.status === "pending" && m.aiGenerated) {
+            return (
+              <div
+                key={m.id}
+                className="rounded-[var(--radius-card)] border border-dashed border-primary/40 bg-primary-muted/30 p-3"
+              >
+                <p className="mb-1 flex items-center gap-1 text-xs font-medium text-primary">
+                  ✨ AI draft — pending your approval
+                </p>
+                <p className="whitespace-pre-wrap text-sm">{m.body}</p>
+                <DraftApprovalButtons messageId={m.id} />
+              </div>
+            );
+          }
+          return (
           <div
             key={m.id}
             className={cn(
@@ -135,7 +153,8 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
               </span>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <ReplyComposer conversationId={conversation.id} />

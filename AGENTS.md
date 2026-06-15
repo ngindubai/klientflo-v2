@@ -73,5 +73,11 @@ Phase 1, but the data model is multi-agent-ready.
   adapter (src/server/speech.ts, OpenAI Whisper when configured) + WhatsApp
   downloadMedia drive transcribeVoiceNote (download→transcribe→re-analyse).
   polishMessage rewrites dictated text professionally (Claude, or light mock).
-- Chunk 14 — AI auto-reply engine + quiet hours.
-- Chunk 15 — Settings, auth, polish.
+- **Chunk 14 ✅ AI auto-reply engine + quiet hours** — maybeAutoReply (src/
+  server/ai/auto-reply.ts) runs on inbound: quiet-hours holding message
+  (isWithinQuietHours, once per window) or guard-railed reply (no final terms/
+  legal/offer-confirm/restricted docs) either auto-sent or stored as a pending
+  AI draft for approval (DraftApprovalButtons: approve/discard). Webhook dedupes
+  by externalId. Settings page has a functional AI/quiet-hours form
+  (updateAiSettings). Other settings sections land in Chunk 15.
+- Chunk 15 — Settings (WhatsApp/calendar/sources), auth, polish.

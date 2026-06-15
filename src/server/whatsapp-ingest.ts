@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { analyzeConversation } from "@/server/ai/analyze";
+import { maybeAutoReply } from "@/server/ai/auto-reply";
 import type { InboundMessage } from "@/server/whatsapp";
 import type { AnalysisMessage } from "@/server/ai/schema";
 
@@ -9,6 +10,15 @@ import type { AnalysisMessage } from "@/server/ai/schema";
  * conversation's classification / urgency / summary current.
  */
 export async function ingestInbound(agentId: string, msg: InboundMessage) {
+  // WhatsApp retries webhooks — ignore messages we've already stored.
+  if (msg.externalId) {
+    const existing = await prisma.message.findFirst({
+      where: { agentId, externalId: msg.externalId },
+      select: { id: true },
+    });
+    if (existing) return existing.id;
+  }
+
   const client = await prisma.client.findFirst({
     where: { agentId, phone: msg.from },
     select: { id: true },
@@ -65,6 +75,9 @@ export async function ingestInbound(agentId: string, msg: InboundMessage) {
       },
     });
   }
+
+  // Auto-reply / quiet-hours handling (respects agent settings).
+  await maybeAutoReply(agentId, conversation.id);
 
   return conversation.id;
 }
