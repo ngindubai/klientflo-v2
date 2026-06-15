@@ -22,11 +22,14 @@ Phase 1, but the data model is multi-agent-ready.
 
 ## Build roadmap (sequential, each chunk ends runnable)
 - **Chunk 1 ✅ Foundation** — scaffold, design system, constants, env template.
-- Chunk 2 — Prisma schema + migrations + seed (Agent, Client, Conversation,
-  Message, Property, Event, Document, Deal, Settings).
-- Chunk 3 — App shell, sidebar nav, global AI command bar (UI).
-- Chunk 4 — Dashboard widgets.
-- Chunk 5 — AI core layer (Claude): classify, urgency 1–5, summarise, extract.
+- **Chunk 2 ✅** — Prisma schema + migrations + seed.
+- **Chunk 3 ✅** — App shell, sidebar nav, global AI command bar (UI).
+- **Chunk 4 ✅** — Dashboard widgets.
+- **Chunk 5 ✅ AI core layer** — Claude (claude-opus-4-8) via @anthropic-ai/sdk
+  with structured outputs (zod) for classify / urgency 1–5 / summarise /
+  extract requirements. Graceful heuristic mock in src/server/ai/mock.ts runs
+  the app without ANTHROPIC_API_KEY. Services in src/server/ai/*; persist via
+  analyzeAndPersistConversation. `pnpm ai:smoke` validates it.
 - Chunk 6 — Functional AI command bar (Claude tool-use).
 - Chunk 7 — Clients & lead management.
 - Chunk 8 — Properties & AI matching + info pack generator.
