@@ -2,19 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X } from "lucide-react";
+import { X, LogOut } from "lucide-react";
 import { APP_NAME, NAV_ITEMS } from "@/lib/constants";
 import { NavIcon } from "@/components/nav-icon";
+import { logout } from "@/server/auth";
 import { cn } from "@/lib/utils";
 
 export function Sidebar({
   mobileOpen,
   onClose,
+  agentName,
 }: {
   mobileOpen: boolean;
   onClose: () => void;
+  agentName: string;
 }) {
   const pathname = usePathname();
+  const initials = agentName
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <>
@@ -78,16 +87,26 @@ export function Sidebar({
 
         {/* Agent footer */}
         <div className="border-t border-border p-3">
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-3 px-3 py-2">
             <span className="flex size-9 items-center justify-center rounded-full bg-accent-muted font-semibold text-accent">
-              S
+              {initials || "K"}
             </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">Sarah Al Mansoori</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{agentName}</p>
               <p className="truncate text-xs text-foreground-muted">
                 Real estate agent
               </p>
             </div>
+            <form action={logout}>
+              <button
+                type="submit"
+                className="rounded-md p-1.5 text-foreground-muted hover:bg-surface-muted hover:text-foreground"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <LogOut className="size-4" />
+              </button>
+            </form>
           </div>
         </div>
       </aside>

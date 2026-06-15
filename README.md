@@ -24,9 +24,17 @@ against mocks/seed data until real credentials are supplied.
 
 ```bash
 pnpm install
-cp .env.example .env   # fill in as features come online
-pnpm dev               # http://localhost:3000
+cp .env.example .env        # fill in as features come online
+createdb klientflo          # or use the DATABASE_URL of your choice
+pnpm prisma migrate dev     # apply migrations
+pnpm db:seed                # sample UAE data + the initial agent
+pnpm dev                    # http://localhost:3000
 ```
+
+Sign in with the seeded agent's email (prefilled) and the demo password
+`klientflo` (override with `APP_PASSWORD`). The app runs fully in **demo mode**
+without external credentials — drop in `ANTHROPIC_API_KEY`, `WHATSAPP_*`,
+`SPEECH_TO_TEXT_*`, and AWS/S3 vars to take each feature live.
 
 ```bash
 pnpm build   # production build

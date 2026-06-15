@@ -80,4 +80,12 @@ Phase 1, but the data model is multi-agent-ready.
   AI draft for approval (DraftApprovalButtons: approve/discard). Webhook dedupes
   by externalId. Settings page has a functional AI/quiet-hours form
   (updateAiSettings). Other settings sections land in Chunk 15.
-- Chunk 15 — Settings (WhatsApp/calendar/sources), auth, polish.
+- **Chunk 15 ✅ Settings, auth & polish** — full Settings page (AI/quiet hours,
+  WhatsApp number, calendar working hours/durations/buffer, property broker/
+  refresh, integration status). Auth: signed-cookie sessions (src/server/
+  auth.ts, HMAC), /login page, middleware gate, session-aware getCurrentAgent
+  (falls back to first agent for webhook/scripts), sidebar shows agent + sign
+  out. Env: AUTH_SECRET, APP_PASSWORD.
+
+All 15 chunks complete. App runs end-to-end in demo mode; drop in
+ANTHROPIC_API_KEY / WHATSAPP_* / SPEECH_* / S3 / AWS creds to go live.

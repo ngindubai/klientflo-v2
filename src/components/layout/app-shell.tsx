@@ -5,12 +5,22 @@ import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { CommandBar } from "@/components/ai/command-bar";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  agentName,
+}: {
+  children: React.ReactNode;
+  agentName: string;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="flex min-h-dvh">
-      <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <Sidebar
+        mobileOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        agentName={agentName}
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar with the persistent global AI command bar */}
