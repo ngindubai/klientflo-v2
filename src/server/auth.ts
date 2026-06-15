@@ -45,11 +45,12 @@ export async function usingDefaultPassword(): Promise<boolean> {
 }
 
 export async function login(email: string, password: string) {
-  const expected = process.env.APP_PASSWORD || "klientflo";
+  // Trim to tolerate copy-pasted env values / inputs with stray whitespace.
+  const expected = (process.env.APP_PASSWORD || "klientflo").trim();
   const agent = await prisma.agent.findFirst({
     where: { email: { equals: email.trim(), mode: "insensitive" } },
   });
-  if (!agent || password !== expected) {
+  if (!agent || password.trim() !== expected) {
     throw new Error("Invalid email or password.");
   }
   (await cookies()).set(COOKIE, sign(agent.id), {

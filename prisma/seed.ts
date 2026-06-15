@@ -26,39 +26,44 @@ function daysFromNow(days: number) {
 }
 
 async function main() {
-  // Clean slate (order respects FKs via cascade on Agent, but be explicit).
-  await prisma.suggestedAction.deleteMany();
-  await prisma.document.deleteMany();
-  await prisma.deal.deleteMany();
-  await prisma.event.deleteMany();
-  await prisma.message.deleteMany();
-  await prisma.conversation.deleteMany();
-  await prisma.property.deleteMany();
-  await prisma.client.deleteMany();
-  await prisma.settings.deleteMany();
-  await prisma.agent.deleteMany();
+  // Idempotent: ensure the agent + settings exist, then only create sample data
+  // on a fresh database. Safe to run on every deploy/restart without wiping.
+  const email = process.env.SEED_AGENT_EMAIL || "garethdeansomers@gmail.com";
 
-  const agent = await prisma.agent.create({
-    data: {
-      name: "Sarah Al Mansoori",
-      email: "garethdeansomers@gmail.com",
+  const agent = await prisma.agent.upsert({
+    where: { email },
+    update: {},
+    create: {
+      name: process.env.SEED_AGENT_NAME || "Sarah Al Mansoori",
+      email,
       phone: "+971501234567",
-      settings: {
-        create: {
-          whatsappBusinessNumber: "+971501234567",
-          aiTone: "professional, warm, and concise",
-          aiApprovalMode: "require_approval",
-          quietHoursStart: "21:00",
-          quietHoursEnd: "08:00",
-          quietHoursDays: [5], // Friday
-          quietHoursMessage:
-            "Thank you for your message. I've received your enquiry and will respond as soon as possible.",
-          brokerNumber: "BRN-12345",
-        },
-      },
     },
   });
   const agentId = agent.id;
+
+  await prisma.settings.upsert({
+    where: { agentId },
+    update: {},
+    create: {
+      agentId,
+      whatsappBusinessNumber: "+971501234567",
+      aiTone: "professional, warm, and concise",
+      aiApprovalMode: "require_approval",
+      quietHoursStart: "21:00",
+      quietHoursEnd: "08:00",
+      quietHoursDays: [5], // Friday
+      quietHoursMessage:
+        "Thank you for your message. I've received your enquiry and will respond as soon as possible.",
+      brokerNumber: "BRN-12345",
+    },
+  });
+
+  // Already seeded? Leave existing data untouched.
+  const existingClients = await prisma.client.count({ where: { agentId } });
+  if (existingClients > 0) {
+    console.log(`Agent ${agent.email} already set up — skipping sample data.`);
+    return;
+  }
 
   // --- Properties --------------------------------------------------------
   const marina = await prisma.property.create({

@@ -25,10 +25,11 @@ services:
     # --prod=false installs dev tooling (prisma, typescript, tailwind) for the
     # build; postinstall runs `prisma generate`.
     buildCommand: pnpm install --prod=false && pnpm build
-    # Migrations run at start, not build: only the runtime network can reach the
-    # database's internal hostname. `migrate deploy` is idempotent (no-op when
-    # already applied), so this is safe on every restart.
-    startCommand: pnpm prisma migrate deploy && pnpm start
+    # Migrations + seed run at start (only the runtime network reaches the DB's
+    # internal hostname). Both are idempotent: migrate deploy no-ops when up to
+    # date, and the seed creates the agent + demo data only on a fresh DB. The
+    # seed is guarded so a hiccup can't take the service down.
+    startCommand: pnpm prisma migrate deploy && (pnpm db:seed || echo "seed skipped") && pnpm start
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
