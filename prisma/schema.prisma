@@ -1,0 +1,381 @@
+// Klientflo data model.
+//
+// Multi-agent-ready from day one: every record belongs to an Agent, even
+// though Phase 1 ships with a single agent. Enum values mirror the shared
+// vocabulary in src/lib/constants.ts. Large/contextual value sets (pipeline
+// stages, document types) are stored as strings and validated in app code.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Enums ---------------------------------------------------------------
+
+enum ClientType {
+  buyer
+  tenant
+  seller
+  landlord
+}
+
+enum PaymentMethod {
+  mortgage
+  cash
+}
+
+enum ConversationClassification {
+  new_enquiry
+  buyer
+  tenant
+  seller
+  landlord
+  hot_lead
+  viewing_request
+  price_negotiation
+  document_request
+  contract_stage
+  payment_stage
+  existing_client
+  low_priority
+  spam
+}
+
+enum MessageDirection {
+  inbound
+  outbound
+}
+
+enum MessageType {
+  text
+  voice
+  image
+  pdf
+  document
+  template
+}
+
+enum MessageStatus {
+  pending
+  sent
+  delivered
+  read
+  failed
+}
+
+enum DealType {
+  sale
+  rental
+}
+
+enum EventType {
+  viewing
+  office_meeting
+  trustee_office_meeting
+  contract_signing
+  handover
+  follow_up
+}
+
+enum DocumentCategory {
+  client
+  property
+  transaction
+}
+
+enum PropertySource {
+  property_finder
+  bayut
+  manual
+}
+
+enum PropertyStatus {
+  active
+  expired
+  draft
+}
+
+enum SuggestedActionStatus {
+  pending
+  done
+  dismissed
+}
+
+enum ApprovalMode {
+  auto_send
+  require_approval
+}
+
+// --- Core tenant ---------------------------------------------------------
+
+model Agent {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  settings         Settings?
+  clients          Client[]
+  conversations    Conversation[]
+  messages         Message[]
+  properties       Property[]
+  events           Event[]
+  documents        Document[]
+  deals            Deal[]
+  suggestedActions SuggestedAction[]
+}
+
+// --- Clients / leads -----------------------------------------------------
+
+model Client {
+  id          String         @id @default(cuid())
+  agentId     String
+  agent       Agent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String
+  email       String?
+  nationality String?
+  clientType  ClientType?
+  // Extracted requirements
+  budgetMin    Int?
+  budgetMax    Int?
+  area         String?
+  bedrooms     Int?
+  propertyType String?
+  paymentMethod PaymentMethod?
+  timeline     String?
+  // Lightweight lead fields
+  status     String?
+  notes      String?
+  nextAction String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  conversations    Conversation[]
+  events           Event[]
+  documents        Document[]
+  deals            Deal[]
+  suggestedActions SuggestedAction[]
+
+  @@unique([agentId, phone])
+  @@index([agentId])
+}
+
+// --- Conversations & messages -------------------------------------------
+
+model Conversation {
+  id             String                      @id @default(cuid())
+  agentId        String
+  agent          Agent                       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  clientId       String?
+  client         Client?                     @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  // WhatsApp counterpart phone (wa_id)
+  contactPhone   String
+  contactName    String?
+  classification ConversationClassification?
+  urgency        Int                         @default(1) // 1-5
+  summary        String?
+  // True when a reply is owed to the contact.
+  awaitingReply  Boolean                     @default(false)
+  lastMessageAt  DateTime?
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+
+  messages         Message[]
+  suggestedActions SuggestedAction[]
+
+  @@unique([agentId, contactPhone])
+  @@index([agentId, urgency])
+}
+
+model Message {
+  id             String           @id @default(cuid())
+  agentId        String
+  agent          Agent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  conversationId String
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  direction      MessageDirection
+  type           MessageType      @default(text)
+  status         MessageStatus    @default(delivered)
+  body           String?
+  mediaUrl       String?
+  // Voice-note handling
+  transcription  String?
+  reviewed       Boolean          @default(true)
+  // External id from WhatsApp
+  externalId     String?
+  // AI-generated and awaiting agent approval before send
+  aiGenerated    Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([agentId, type, reviewed])
+}
+
+// --- Properties ----------------------------------------------------------
+
+model Property {
+  id           String         @id @default(cuid())
+  agentId      String
+  agent        Agent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  listingId    String?
+  title        String
+  price        Int
+  bedrooms     Int?
+  bathrooms    Int?
+  sizeSqft     Int?
+  propertyType String?
+  area         String?
+  community    String?
+  description  String?
+  images       String[]
+  floorPlans   String[]
+  brochureUrl  String?
+  paymentPlan  String?
+  listingUrl   String?
+  permitNumber String?
+  source       PropertySource @default(manual)
+  status       PropertyStatus @default(active)
+  expiresAt    DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  events    Event[]
+  deals     Deal[]
+  documents Document[]
+
+  @@index([agentId, status])
+}
+
+// --- Calendar ------------------------------------------------------------
+
+model Event {
+  id         String    @id @default(cuid())
+  agentId    String
+  agent      Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  type       EventType
+  title      String
+  startsAt   DateTime
+  endsAt     DateTime
+  location   String?
+  notes      String?
+  clientId   String?
+  client     Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([agentId, startsAt])
+}
+
+// --- Documents -----------------------------------------------------------
+
+model Document {
+  id         String           @id @default(cuid())
+  agentId    String
+  agent      Agent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  category   DocumentCategory
+  type       String // see DOCUMENT_TYPES in constants.ts
+  name       String
+  fileUrl    String?
+  expiresAt  DateTime?
+  clientId   String?
+  client     Client?          @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  dealId     String?
+  deal       Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  propertyId String?
+  property   Property?        @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([agentId, category])
+}
+
+// --- Deals / pipeline ----------------------------------------------------
+
+model Deal {
+  id         String    @id @default(cuid())
+  agentId    String
+  agent      Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  type       DealType
+  // Validated against SALES_/RENTAL_PIPELINE_STAGES in constants.ts
+  stage      String
+  clientId   String?
+  client     Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  amount     Int?
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  documents Document[]
+
+  @@index([agentId, type, stage])
+}
+
+// --- AI suggested actions (dashboard) -----------------------------------
+
+model SuggestedAction {
+  id             String                @id @default(cuid())
+  agentId        String
+  agent          Agent                 @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  // e.g. book_viewing, send_brochure, follow_up, request_passport, send_payment_plan
+  type           String
+  label          String
+  reason         String?
+  status         SuggestedActionStatus @default(pending)
+  clientId       String?
+  client         Client?               @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  conversationId String?
+  conversation   Conversation?         @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  createdAt      DateTime              @default(now())
+
+  @@index([agentId, status])
+}
+
+// --- Settings ------------------------------------------------------------
+
+model Settings {
+  id      String @id @default(cuid())
+  agentId String @unique
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // WhatsApp
+  whatsappBusinessNumber String?
+  whatsappTemplates      Json   @default("[]")
+
+  // AI
+  aiAutoReplyEnabled       Boolean      @default(false)
+  aiApprovalMode           ApprovalMode @default(require_approval)
+  aiTone                   String       @default("professional and friendly")
+  followUpAutomation       Boolean      @default(false)
+  viewingBookingAutomation Boolean      @default(false)
+  newLeadAutomation        Boolean      @default(false)
+
+  // Quiet hours
+  quietHoursStart   String? // "HH:mm"
+  quietHoursEnd     String?
+  quietHoursDays    Int[]   @default([]) // 0=Sun .. 6=Sat
+  quietHoursMessage String?
+
+  // Calendar
+  workingHoursStart String  @default("09:00")
+  workingHoursEnd   String  @default("18:00")
+  viewingDuration   Int     @default(30) // minutes
+  meetingDuration   Int     @default(60)
+  bufferTime        Int     @default(15)
+
+  // Property sources
+  brokerNumber    String?
+  refreshFrequency String @default("daily")
+
+  updatedAt DateTime @updatedAt
+}
