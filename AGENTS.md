@@ -46,7 +46,11 @@ Phase 1, but the data model is multi-agent-ready.
   (src/server/info-pack.ts → generateInfoPack) builds a WhatsApp-ready message +
   attachments. Portal import behind ListingSource adapters (Property Finder /
   Bayut stubs) with daily-refresh + expiry detection (refreshListings).
-- Chunk 9 — Calendar.
+- **Chunk 9 ✅ Calendar** — month/week/day views (src/lib/calendar.ts helpers,
+  URL-driven view+date nav), events linked to client+property, create/edit/
+  delete (event-actions), per-type colour chips, and generateEventInvite for a
+  WhatsApp invite message. Note: calendar components take a `refDate` prop (not
+  `ref`, which the react-hooks/refs lint rule reserves).
 - Chunk 10 — Sales & rental pipelines.
 - Chunk 11 — Documents (S3).
 - Chunk 12 — WhatsApp Business Cloud API.
