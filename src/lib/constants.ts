@@ -1,0 +1,164 @@
+/**
+ * Domain constants for Klientflo.
+ *
+ * These are the shared vocabulary of the app — navigation, pipeline stages,
+ * urgency levels, conversation classifications, and document types — used
+ * across the dashboard, AI layer, and data model. Kept framework-free so they
+ * can be imported on both the server and the client.
+ */
+
+export const APP_NAME = "Klientflo";
+
+// --- Navigation ----------------------------------------------------------
+
+export const NAV_ITEMS = [
+  { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
+  { label: "WhatsApp Inbox", href: "/inbox", icon: "inbox" },
+  { label: "Clients", href: "/clients", icon: "clients" },
+  { label: "Properties", href: "/properties", icon: "properties" },
+  { label: "Calendar", href: "/calendar", icon: "calendar" },
+  { label: "Documents", href: "/documents", icon: "documents" },
+  { label: "Settings", href: "/settings", icon: "settings" },
+] as const;
+
+// --- Conversation classification ----------------------------------------
+
+export const CONVERSATION_CLASSIFICATIONS = [
+  "new_enquiry",
+  "buyer",
+  "tenant",
+  "seller",
+  "landlord",
+  "hot_lead",
+  "viewing_request",
+  "price_negotiation",
+  "document_request",
+  "contract_stage",
+  "payment_stage",
+  "existing_client",
+  "low_priority",
+  "spam",
+] as const;
+export type ConversationClassification =
+  (typeof CONVERSATION_CLASSIFICATIONS)[number];
+
+// --- Urgency (1 = calm, 5 = immediate action required) -------------------
+
+export const URGENCY_LEVELS = [1, 2, 3, 4, 5] as const;
+export type UrgencyLevel = (typeof URGENCY_LEVELS)[number];
+
+export const URGENCY_LABELS: Record<UrgencyLevel, string> = {
+  1: "Low",
+  2: "Moderate",
+  3: "Elevated",
+  4: "High",
+  5: "Immediate",
+};
+
+// --- Client / lead types -------------------------------------------------
+
+export const CLIENT_TYPES = ["buyer", "tenant", "seller", "landlord"] as const;
+export type ClientType = (typeof CLIENT_TYPES)[number];
+
+export const PAYMENT_METHODS = ["mortgage", "cash"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+// --- Pipelines -----------------------------------------------------------
+
+export const SALES_PIPELINE_STAGES = [
+  "new_enquiry",
+  "qualified",
+  "properties_sent",
+  "viewing_booked",
+  "viewing_completed",
+  "offer_submitted",
+  "offer_accepted",
+  "documents_requested",
+  "form_f_mou",
+  "deposit_stage",
+  "trustee_office_booked",
+  "transfer_completed",
+  "closed_won",
+  "closed_lost",
+] as const;
+export type SalesPipelineStage = (typeof SALES_PIPELINE_STAGES)[number];
+
+export const RENTAL_PIPELINE_STAGES = [
+  "new_enquiry",
+  "qualified",
+  "properties_sent",
+  "viewing_booked",
+  "viewing_completed",
+  "offer_submitted",
+  "offer_accepted",
+  "documents_requested",
+  "contract_preparation",
+  "cheques_collected",
+  "ejari_stage",
+  "handover",
+  "closed_won",
+  "closed_lost",
+] as const;
+export type RentalPipelineStage = (typeof RENTAL_PIPELINE_STAGES)[number];
+
+export const DEAL_TYPES = ["sale", "rental"] as const;
+export type DealType = (typeof DEAL_TYPES)[number];
+
+// --- Calendar events -----------------------------------------------------
+
+export const EVENT_TYPES = [
+  "viewing",
+  "office_meeting",
+  "trustee_office_meeting",
+  "contract_signing",
+  "handover",
+  "follow_up",
+] as const;
+export type EventType = (typeof EVENT_TYPES)[number];
+
+// --- Documents -----------------------------------------------------------
+
+export const CLIENT_DOCUMENT_TYPES = [
+  "passport",
+  "emirates_id",
+  "visa",
+  "proof_of_funds",
+  "mortgage_approval",
+] as const;
+
+export const PROPERTY_DOCUMENT_TYPES = [
+  "title_deed",
+  "oqood",
+  "permit",
+  "floor_plan",
+] as const;
+
+export const TRANSACTION_DOCUMENT_TYPES = [
+  "form_a",
+  "form_b",
+  "form_f",
+  "tenancy_contract",
+  "cheque_copy",
+  "receipt",
+  "trustee_office_confirmation",
+] as const;
+
+export const DOCUMENT_TYPES = [
+  ...CLIENT_DOCUMENT_TYPES,
+  ...PROPERTY_DOCUMENT_TYPES,
+  ...TRANSACTION_DOCUMENT_TYPES,
+] as const;
+export type DocumentType = (typeof DOCUMENT_TYPES)[number];
+
+// --- Property sources ----------------------------------------------------
+
+export const PROPERTY_SOURCES = ["property_finder", "bayut", "manual"] as const;
+export type PropertySource = (typeof PROPERTY_SOURCES)[number];
+
+/** Turn a snake_case enum value into a human label, e.g. "form_f_mou" → "Form F / MOU". */
+export function humanizeEnum(value: string) {
+  return value
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}

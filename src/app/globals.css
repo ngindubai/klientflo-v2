@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/*
+ * Klientflo design tokens.
+ * A clean, modern, WhatsApp-first palette: deep indigo primary with an
+ * emerald accent (nods to WhatsApp green) on a soft neutral canvas.
+ */
+:root {
+  --background: #f7f8fa;
+  --surface: #ffffff;
+  --surface-muted: #f1f3f7;
+  --foreground: #0f172a;
+  --foreground-muted: #64748b;
+  --border: #e2e8f0;
+
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --primary-muted: #eef2ff;
+
+  --accent: #16a34a;
+  --accent-foreground: #ffffff;
+  --accent-muted: #f0fdf4;
+
+  /* Urgency scale (1 = calm, 5 = immediate action) */
+  --urgency-1: #16a34a;
+  --urgency-2: #65a30d;
+  --urgency-3: #ca8a04;
+  --urgency-4: #ea580c;
+  --urgency-5: #dc2626;
+
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-border: var(--border);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-muted: var(--primary-muted);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-muted: var(--accent-muted);
+
+  --color-urgency-1: var(--urgency-1);
+  --color-urgency-2: var(--urgency-2);
+  --color-urgency-3: var(--urgency-3);
+  --color-urgency-4: var(--urgency-4);
+  --color-urgency-5: var(--urgency-5);
+
+  --radius-card: var(--radius);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1020;
+    --surface: #131a2e;
+    --surface-muted: #1b2440;
+    --foreground: #e6e9f2;
+    --foreground-muted: #94a3b8;
+    --border: #283150;
+    --primary: #818cf8;
+    --primary-foreground: #0b1020;
+    --primary-muted: #1e2547;
+    --accent: #34d399;
+    --accent-foreground: #04130c;
+    --accent-muted: #102a1f;
+  }
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
