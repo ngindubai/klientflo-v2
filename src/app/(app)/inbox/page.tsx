@@ -11,6 +11,8 @@ import {
   getConversationsCount,
   CONVERSATIONS_PAGE_SIZE,
 } from "@/server/inbox";
+import { getTemplates } from "@/server/templates";
+import { getPropertyOptions } from "@/server/properties";
 import { isWhatsAppConfigured } from "@/server/whatsapp";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +42,10 @@ export default async function InboxPage({
     getConversationsCount(filters),
     c ? getConversation(c) : Promise.resolve(null),
   ]);
+  // For the in-chat "Send pack" action (only when a thread is open).
+  const [packTemplates, packProperties] = active
+    ? await Promise.all([getTemplates(), getPropertyOptions()])
+    : [[], []];
 
   return (
     <div className="flex h-[calc(100dvh-7rem)] flex-col">
@@ -55,7 +61,7 @@ export default async function InboxPage({
         </div>
       </div>
 
-      <Card className="grid flex-1 grid-cols-1 overflow-hidden p-0 lg:grid-cols-[340px_1fr]">
+      <Card className="grid flex-1 grid-cols-1 overflow-hidden p-0 lg:grid-cols-[420px_1fr]">
         {/* Conversation list */}
         <div
           className={cn(
@@ -89,7 +95,11 @@ export default async function InboxPage({
         {/* Thread */}
         <div className={cn("min-w-0", active ? "block" : "hidden lg:block")}>
           {active ? (
-            <MessageThread conversation={active} />
+            <MessageThread
+              conversation={active}
+              templates={packTemplates.map((t) => ({ id: t.id, name: t.name }))}
+              properties={packProperties}
+            />
           ) : (
             <div className="flex h-full flex-col items-center justify-center p-10 text-center text-foreground-muted">
               <MessageSquare className="mb-2 size-8" />

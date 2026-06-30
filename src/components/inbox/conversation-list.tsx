@@ -47,12 +47,23 @@ export function ConversationList({
                 c.id === activeId && "bg-surface-muted",
               )}
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2 truncate font-medium">
-                  {c.awaitingReply && (
-                    <span className="size-2 shrink-0 rounded-full bg-accent" title="Awaiting reply" />
+              {/* Line 1: name + tag (always visible) + time */}
+              <div className="flex items-center gap-2">
+                {c.awaitingReply && (
+                  <span className="size-2 shrink-0 rounded-full bg-accent" title="Awaiting reply" />
+                )}
+                <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                    c.client
+                      ? CONTACT_CATEGORY_CHIP[c.client.category]
+                      : "border-border bg-surface-muted text-foreground-muted",
                   )}
-                  {name}
+                >
+                  {c.client
+                    ? CONTACT_CATEGORY_LABELS[c.client.category]
+                    : "Untagged"}
                 </span>
                 {c.lastMessageAt && (
                   <span className="shrink-0 text-xs text-foreground-muted">
@@ -60,23 +71,16 @@ export function ConversationList({
                   </span>
                 )}
               </div>
-              <div className="mt-0.5 flex items-center justify-between gap-2">
-                <p className="line-clamp-1 text-xs text-foreground-muted">
+              {/* Line 2: message preview (more visible) + urgency */}
+              <div className="mt-1 flex items-start justify-between gap-2">
+                <p className="line-clamp-2 min-w-0 flex-1 text-xs text-foreground-muted">
                   {preview(c.messages[0])}
                 </p>
-                <span className="flex shrink-0 items-center gap-1">
-                  {c.client && (
-                    <span
-                      className={cn(
-                        "rounded-full border px-1.5 py-0.5 text-[10px] font-medium",
-                        CONTACT_CATEGORY_CHIP[c.client.category],
-                      )}
-                    >
-                      {CONTACT_CATEGORY_LABELS[c.client.category]}
-                    </span>
-                  )}
-                  {c.urgency >= 4 && <UrgencyBadge level={c.urgency} />}
-                </span>
+                {c.urgency >= 4 && (
+                  <span className="shrink-0">
+                    <UrgencyBadge level={c.urgency} />
+                  </span>
+                )}
               </div>
             </Link>
           </li>

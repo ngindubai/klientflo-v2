@@ -5,14 +5,18 @@ import type { Prisma } from "@/generated/prisma/client";
 
 export const CONTACTS_PAGE_SIZE = 30;
 
+export type ContactFilters = { query?: string; area?: string };
+
 function contactWhere(
   agentId: string,
   category: ContactCategory,
-  query?: string,
+  filters: ContactFilters = {},
 ): Prisma.ContactWhereInput {
+  const { query, area } = filters;
   return {
     agentId,
     category,
+    ...(area ? { area } : {}),
     ...(query
       ? {
           OR: [
@@ -20,6 +24,7 @@ function contactWhere(
             { phone: { contains: query } },
             { email: { contains: query, mode: "insensitive" } },
             { area: { contains: query, mode: "insensitive" } },
+            { agencyName: { contains: query, mode: "insensitive" } },
           ],
         }
       : {}),
@@ -32,13 +37,13 @@ function contactWhere(
  * shows only clients; the Agents / Investors sections reuse this.
  */
 export async function getClients(
-  query?: string,
+  filters: ContactFilters = {},
   category: ContactCategory = "client",
   page = 1,
 ) {
   const agent = await getCurrentAgent();
   const clients = await prisma.contact.findMany({
-    where: contactWhere(agent.id, category, query),
+    where: contactWhere(agent.id, category, filters),
     orderBy: { updatedAt: "desc" },
     include: { conversations: { select: { urgency: true } } },
     skip: (Math.max(1, page) - 1) * CONTACTS_PAGE_SIZE,
@@ -51,15 +56,27 @@ export async function getClients(
   }));
 }
 
-/** Count of contacts matching a category + query, for pagination. */
+/** Count of contacts matching a category + filters, for pagination. */
 export async function getContactsCount(
-  query?: string,
+  filters: ContactFilters = {},
   category: ContactCategory = "client",
 ) {
   const agent = await getCurrentAgent();
   return prisma.contact.count({
-    where: contactWhere(agent.id, category, query),
+    where: contactWhere(agent.id, category, filters),
   });
+}
+
+/** Distinct areas present for a category, for the filter dropdown. */
+export async function getContactAreas(category: ContactCategory = "client") {
+  const agent = await getCurrentAgent();
+  const rows = await prisma.contact.findMany({
+    where: { agentId: agent.id, category, NOT: { area: null } },
+    select: { area: true },
+    distinct: ["area"],
+    orderBy: { area: "asc" },
+  });
+  return rows.map((r) => r.area).filter(Boolean) as string[];
 }
 
 /** A single client with everything linked to it. */

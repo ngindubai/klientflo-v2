@@ -1,10 +1,16 @@
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Plus, MapPin, Building2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { Pager } from "@/components/ui/pager";
+import { ContactFilters } from "@/components/clients/contact-filters";
 import { UrgencyBadge } from "@/components/dashboard/urgency-badge";
-import { getClients, getContactsCount, CONTACTS_PAGE_SIZE } from "@/server/clients";
+import {
+  getClients,
+  getContactsCount,
+  getContactAreas,
+  CONTACTS_PAGE_SIZE,
+} from "@/server/clients";
 import { formatAED } from "@/lib/utils";
 import { humanizeEnum, type ContactCategory } from "@/lib/constants";
 
@@ -21,23 +27,29 @@ type SectionConfig = {
 /**
  * Shared list view for a contact category. Clients, Agents and Investors all
  * render through this — same card grid, category-appropriate copy and detail
- * line. Contacts link to the unified contact detail at /clients/[id].
+ * line, plus a search + area filter. Contacts link to /clients/[id].
  */
 export async function ContactsSection({
   config,
   query,
+  area,
   page = 1,
   basePath,
 }: {
   config: SectionConfig;
   query?: string;
+  area?: string;
   page?: number;
   basePath: string;
 }) {
-  const [contacts, total] = await Promise.all([
-    getClients(query, config.category, page),
-    getContactsCount(query, config.category),
+  const filters = { query, area };
+  const [contacts, total, areas] = await Promise.all([
+    getClients(filters, config.category, page),
+    getContactsCount(filters, config.category),
+    getContactAreas(config.category),
   ]);
+
+  const isInvestor = config.category === "investor";
 
   return (
     <>
@@ -56,29 +68,24 @@ export async function ContactsSection({
         }
       />
 
-      <form className="mb-4 flex max-w-md items-center gap-2 rounded-lg border border-border bg-surface px-3">
-        <Search className="size-4 text-foreground-muted" />
-        <input
-          name="q"
-          defaultValue={query}
-          placeholder={config.searchPlaceholder}
-          className="h-10 flex-1 bg-transparent text-sm outline-none placeholder:text-foreground-muted"
-        />
-      </form>
+      <ContactFilters
+        basePath={basePath}
+        areas={areas}
+        placeholder={config.searchPlaceholder}
+      />
 
       {contacts.length === 0 ? (
         <Card className="p-10 text-center text-sm text-foreground-muted">
-          {query ? "No matches for your search." : config.emptyText}
+          {query || area ? "No matches for these filters." : config.emptyText}
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {contacts.map((c) => {
-            // Category-appropriate secondary line.
             const subtitle =
               config.category === "agent"
                 ? [c.agencyName, c.phone].filter(Boolean).join(" · ")
                 : [
-                    config.category === "investor"
+                    isInvestor
                       ? "Investor"
                       : c.clientType && humanizeEnum(c.clientType),
                     c.phone,
@@ -86,47 +93,66 @@ export async function ContactsSection({
                     .filter(Boolean)
                     .join(" · ");
             return (
-              <Link key={c.id} href={`/clients/${c.id}`}>
-                <Card className="h-full p-4 transition-colors hover:border-primary">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{c.name}</p>
-                      <p className="truncate text-xs text-foreground-muted">
-                        {subtitle || c.phone}
-                      </p>
-                    </div>
-                    {c.maxUrgency >= 4 && <UrgencyBadge level={c.maxUrgency} />}
+              <Card key={c.id} className="flex h-full flex-col p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <Link
+                      href={`/clients/${c.id}`}
+                      className="truncate font-medium hover:text-primary"
+                    >
+                      {c.name}
+                    </Link>
+                    <p className="truncate text-xs text-foreground-muted">
+                      {subtitle || c.phone}
+                    </p>
                   </div>
+                  {c.maxUrgency >= 4 && <UrgencyBadge level={c.maxUrgency} />}
+                </div>
 
-                  <dl className="mt-3 space-y-1 text-xs text-foreground-muted">
-                    {(c.area || c.bedrooms || c.propertyType) && (
-                      <div className="truncate">
-                        {[
-                          c.bedrooms ? `${c.bedrooms} bed` : null,
-                          c.propertyType,
-                          c.area,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </div>
-                    )}
-                    {c.budgetMax != null && (
-                      <div>
-                        {config.category === "investor" ? "Ticket up to " : "Budget up to "}
-                        {formatAED(c.budgetMax)}
-                      </div>
-                    )}
-                  </dl>
+                {/* Target area — prominent for investors/clients so they can be
+                    matched to available properties. */}
+                {c.area && (
+                  <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+                    <MapPin className="size-3.5 text-primary" />
+                    {isInvestor ? "Looking in " : ""}
+                    {c.area}
+                  </p>
+                )}
 
-                  {c.status && (
-                    <div className="mt-3">
-                      <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-foreground-muted">
-                        {c.status}
-                      </span>
+                <dl className="mt-2 space-y-1 text-xs text-foreground-muted">
+                  {(c.bedrooms || c.propertyType) && (
+                    <div className="truncate">
+                      {[c.bedrooms ? `${c.bedrooms} bed` : null, c.propertyType]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </div>
                   )}
-                </Card>
-              </Link>
+                  {c.budgetMax != null && (
+                    <div>
+                      {isInvestor ? "Ticket up to " : "Budget up to "}
+                      {formatAED(c.budgetMax)}
+                    </div>
+                  )}
+                </dl>
+
+                <div className="mt-auto flex items-center justify-between gap-2 pt-3">
+                  {c.status ? (
+                    <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-foreground-muted">
+                      {c.status}
+                    </span>
+                  ) : (
+                    <span />
+                  )}
+                  {c.area && (
+                    <Link
+                      href={`/properties?area=${encodeURIComponent(c.area)}`}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    >
+                      <Building2 className="size-3.5" /> Matching properties
+                    </Link>
+                  )}
+                </div>
+              </Card>
             );
           })}
         </div>
@@ -137,7 +163,10 @@ export async function ContactsSection({
         pageSize={CONTACTS_PAGE_SIZE}
         total={total}
         basePath={basePath}
-        query={query ? { q: query } : undefined}
+        query={{
+          ...(query ? { q: query } : {}),
+          ...(area ? { area } : {}),
+        }}
       />
     </>
   );

@@ -42,15 +42,15 @@ export default async function DashboardPage() {
       />
 
       {/* Headline stats */}
-      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-3 gap-4">
         <StatCard label="Urgent" value={d.counts.urgent} accent="urgent" />
         <StatCard label="Pending replies" value={d.counts.pending} />
         <StatCard label="Suggested actions" value={d.counts.actions} />
-        <StatCard label="New voice notes" value={d.counts.voice} />
       </div>
 
-      {/* Widgets */}
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      {/* Widgets — equal-height cards with internal scroll keep the grid aligned
+          regardless of how many items each section has. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
         {/* Urgent messages */}
         <WidgetCard
           title="Urgent Messages"

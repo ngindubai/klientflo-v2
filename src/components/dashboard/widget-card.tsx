@@ -42,9 +42,9 @@ export function WidgetCard({
           </Link>
         )}
       </div>
-      <div className="flex-1 p-2">
+      <div className="max-h-72 flex-1 overflow-y-auto p-2">
         {isEmpty ? (
-          <p className="px-2 py-6 text-center text-sm text-foreground-muted">
+          <p className="flex h-full min-h-24 items-center justify-center px-2 py-6 text-center text-sm text-foreground-muted">
             {empty ?? "Nothing here right now."}
           </p>
         ) : (

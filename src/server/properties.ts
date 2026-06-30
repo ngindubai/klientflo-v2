@@ -37,6 +37,18 @@ export async function getProperties(filters: PropertyFilters = {}) {
   });
 }
 
+/** Distinct property areas for the filter dropdown. */
+export async function getPropertyAreas() {
+  const agent = await getCurrentAgent();
+  const rows = await prisma.property.findMany({
+    where: { agentId: agent.id, NOT: { area: null } },
+    select: { area: true },
+    distinct: ["area"],
+    orderBy: { area: "asc" },
+  });
+  return rows.map((r) => r.area).filter(Boolean) as string[];
+}
+
 /** Minimal id + title list for dropdowns (template preview, media linking). */
 export async function getPropertyOptions() {
   const agent = await getCurrentAgent();

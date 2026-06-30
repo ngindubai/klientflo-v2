@@ -7,6 +7,7 @@ import { DraftApprovalButtons } from "@/components/inbox/draft-approval-buttons"
 import { ReplyComposer } from "@/components/inbox/reply-composer";
 import { TagSelector } from "@/components/inbox/tag-selector";
 import { TagSuggestion } from "@/components/inbox/tag-suggestion";
+import { SendPackButton } from "@/components/inbox/send-pack-button";
 import { formatTime } from "@/lib/utils";
 import { humanizeEnum, type ContactCategory } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -35,7 +36,15 @@ type Conversation = {
   messages: Message[];
 };
 
-export function MessageThread({ conversation }: { conversation: Conversation }) {
+export function MessageThread({
+  conversation,
+  templates,
+  properties,
+}: {
+  conversation: Conversation;
+  templates: { id: string; name: string }[];
+  properties: { id: string; title: string }[];
+}) {
   const name =
     conversation.client?.name ?? conversation.contactName ?? conversation.contactPhone;
 
@@ -73,6 +82,11 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <SendPackButton
+            conversationId={conversation.id}
+            templates={templates}
+            properties={properties}
+          />
           <TagSelector
             conversationId={conversation.id}
             category={conversation.client?.category ?? null}
@@ -130,7 +144,7 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
           >
             <div
               className={cn(
-                "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
+                "max-w-[80%] overflow-hidden rounded-2xl px-3 py-2 text-sm break-words [overflow-wrap:anywhere]",
                 m.direction === "outbound"
                   ? "rounded-br-sm bg-primary text-primary-foreground"
                   : "rounded-bl-sm bg-surface-muted text-foreground",

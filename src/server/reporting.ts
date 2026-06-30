@@ -10,8 +10,37 @@ import {
 export const REPORT_RANGES = [7, 30, 90] as const;
 export type ReportRange = (typeof REPORT_RANGES)[number];
 
+export type ReportWindow = { days?: ReportRange; from?: string; to?: string };
+
+/** Resolve a preset (days) or an explicit from/to into a date window + label. */
+export function resolveWindow(win: ReportWindow): {
+  since: Date;
+  until: Date | null;
+  label: string;
+} {
+  const now = Date.now();
+  if (win.from || win.to) {
+    const since = win.from
+      ? new Date(`${win.from}T00:00:00`)
+      : new Date(now - 30 * 86_400_000);
+    const until = win.to ? new Date(`${win.to}T23:59:59`) : null;
+    const fmt = (d: Date) => d.toLocaleDateString("en-GB");
+    return {
+      since,
+      until,
+      label: `${fmt(since)} – ${until ? fmt(until) : "now"}`,
+    };
+  }
+  const days = win.days ?? 30;
+  return {
+    since: new Date(now - days * 86_400_000),
+    until: null,
+    label: `Last ${days} days`,
+  };
+}
+
 export type Report = {
-  days: ReportRange;
+  label: string;
   kpis: {
     messagesTotal: number;
     inbound: number;
@@ -31,10 +60,11 @@ export type Report = {
  * `days` days. Note: messagesByCategory aggregates in JS after a ranged fetch;
  * fine for current volumes, revisit with a SQL rollup at scale (see handover).
  */
-export async function getReport(days: ReportRange = 30): Promise<Report> {
+export async function getReport(win: ReportWindow = {}): Promise<Report> {
   const agent = await getCurrentAgent();
-  const since = new Date(Date.now() - days * 86_400_000);
-  const ranged = { agentId: agent.id, createdAt: { gte: since } };
+  const { since, until, label } = resolveWindow(win);
+  const createdAt = { gte: since, ...(until ? { lte: until } : {}) };
+  const ranged = { agentId: agent.id, createdAt };
 
   const [
     inbound,
@@ -50,7 +80,7 @@ export async function getReport(days: ReportRange = 30): Promise<Report> {
     prisma.message.count({ where: { ...ranged, direction: "outbound" } }),
     prisma.conversation.count({ where: ranged }),
     prisma.event.count({
-      where: { agentId: agent.id, type: "viewing", createdAt: { gte: since } },
+      where: { agentId: agent.id, type: "viewing", createdAt },
     }),
     prisma.deal.count({ where: ranged }),
     prisma.message.findMany({
@@ -102,7 +132,7 @@ export async function getReport(days: ReportRange = 30): Promise<Report> {
     .sort((a, b) => b.count - a.count);
 
   return {
-    days,
+    label,
     kpis: {
       messagesTotal: inbound + outbound,
       inbound,

@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { RefreshSources } from "@/components/properties/refresh-sources";
-import { getProperties } from "@/server/properties";
+import { PropertyFilters } from "@/components/properties/property-filters";
+import { getProperties, getPropertyAreas } from "@/server/properties";
 import { getLatestScrapeJob } from "@/server/scrape";
 import { getCurrentAgent } from "@/server/agent";
 import { formatAED } from "@/lib/utils";
@@ -21,11 +22,27 @@ const STATUS_STYLE: Record<string, string> = {
 export default async function PropertiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    area?: string;
+    bedrooms?: string;
+    status?: string;
+  }>;
 }) {
-  const { q } = await searchParams;
+  const { q, area, bedrooms, status } = await searchParams;
   const agent = await getCurrentAgent();
-  const properties = await getProperties({ q });
+  const [properties, areas] = await Promise.all([
+    getProperties({
+      q,
+      area,
+      bedrooms: bedrooms !== undefined && bedrooms !== "" ? Number(bedrooms) : undefined,
+      status:
+        status === "active" || status === "expired" || status === "draft"
+          ? status
+          : undefined,
+    }),
+    getPropertyAreas(),
+  ]);
   const latestJob = await getLatestScrapeJob(agent.id);
   const initialJob = latestJob
     ? {
@@ -55,19 +72,13 @@ export default async function PropertiesPage({
         }
       />
 
-      <form className="mb-4 flex max-w-md items-center gap-2 rounded-lg border border-border bg-surface px-3">
-        <Search className="size-4 text-foreground-muted" />
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder="Search title, area, community, listing ID…"
-          className="h-10 flex-1 bg-transparent text-sm outline-none placeholder:text-foreground-muted"
-        />
-      </form>
+      <PropertyFilters areas={areas} />
 
       {properties.length === 0 ? (
         <Card className="p-10 text-center text-sm text-foreground-muted">
-          {q ? "No properties match your search." : "No properties yet."}
+          {q || area || bedrooms || status
+            ? "No properties match these filters."
+            : "No properties yet."}
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Download } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
+import { ReportDateRange } from "@/components/reports/report-date-range";
 import { getReport, REPORT_RANGES, type ReportRange } from "@/server/reporting";
 import { formatMinutes } from "@/lib/reporting-calc";
 import {
@@ -49,13 +51,19 @@ function BarList({
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
 }) {
-  const { range } = await searchParams;
+  const { range, from, to } = await searchParams;
+  const custom = Boolean(from || to);
   const days = (REPORT_RANGES.includes(Number(range) as ReportRange)
     ? Number(range)
     : 30) as ReportRange;
-  const report = await getReport(days);
+  const report = await getReport(custom ? { from, to } : { days });
+
+  // Preserve the active window in the export link.
+  const exportQuery = custom
+    ? new URLSearchParams({ ...(from ? { from } : {}), ...(to ? { to } : {}) })
+    : new URLSearchParams({ range: String(days) });
 
   const kpis = [
     { label: "WhatsApp messages", value: report.kpis.messagesTotal },
@@ -73,23 +81,34 @@ export default async function ReportsPage({
     <>
       <PageHeader
         title="Reports"
-        description="WhatsApp activity and pipeline metrics for your business."
+        description={`WhatsApp activity and pipeline metrics · ${report.label}`}
         action={
-          <div className="flex items-center gap-1 rounded-lg border border-border p-0.5 text-sm">
-            {REPORT_RANGES.map((r) => (
-              <Link
-                key={r}
-                href={`/reports?range=${r}`}
-                className={
-                  "rounded-md px-3 py-1.5 font-medium " +
-                  (r === days
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground-muted hover:bg-surface-muted")
-                }
-              >
-                {r}d
-              </Link>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 rounded-lg border border-border p-0.5 text-sm">
+              {REPORT_RANGES.map((r) => (
+                <Link
+                  key={r}
+                  href={`/reports?range=${r}`}
+                  className={
+                    "rounded-md px-3 py-1.5 font-medium " +
+                    (!custom && r === days
+                      ? "bg-primary text-primary-foreground"
+                      : "text-foreground-muted hover:bg-surface-muted")
+                  }
+                >
+                  {r}d
+                </Link>
+              ))}
+            </div>
+            <ReportDateRange from={from} to={to} />
+            <a
+              href={`/api/reports/pdf?${exportQuery.toString()}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              <Download className="size-4" /> Export PDF
+            </a>
           </div>
         }
       />
