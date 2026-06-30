@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage, Section } from "@/components/legal/legal-page";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Klientflo",
+  title: "Privacy Policy — KlientFlo",
   robots: { index: false, follow: false },
 };
 
@@ -10,13 +10,13 @@ export default function PrivacyPage() {
   return (
     <LegalPage title="Privacy Policy">
       <p>
-        This policy explains what personal data Klientflo (&ldquo;we&rdquo;,
+        This policy explains what personal data KlientFlo (&ldquo;we&rdquo;,
         &ldquo;the Service&rdquo;) processes on behalf of the real estate agent
         or brokerage operating it (&ldquo;the Agent&rdquo;), and how. It is
         written with the UAE Federal Decree-Law No. 45 of 2021 on the Protection
         of Personal Data (&ldquo;PDPL&rdquo;) in mind. Where the Agent determines
         the purposes of processing, the Agent is the data controller and
-        Klientflo acts as a processor.
+        KlientFlo acts as a processor.
       </p>
 
       <Section heading="Data we process">
@@ -107,7 +107,7 @@ export default function PrivacyPage() {
       <Section heading="Contact">
         <p>
           For privacy questions or data-subject requests, contact the Agent /
-          brokerage operating this Klientflo instance. (Insert your data
+          brokerage operating this KlientFlo instance. (Insert your data
           protection contact details here.)
         </p>
       </Section>

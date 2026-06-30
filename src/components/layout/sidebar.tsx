@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, LogOut } from "lucide-react";
-import { APP_NAME, NAV_ITEMS } from "@/lib/constants";
+import { NAV_ITEMS } from "@/lib/constants";
 import { NavIcon } from "@/components/nav-icon";
+import { BrandLogo } from "@/components/brand-logo";
 import { logout } from "@/server/auth";
 import { cn } from "@/lib/utils";
 
@@ -44,13 +45,8 @@ export function Sidebar({
       >
         {/* Brand */}
         <div className="flex h-16 items-center justify-between px-5">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold">
-              K
-            </span>
-            <span className="text-lg font-semibold tracking-tight">
-              {APP_NAME}
-            </span>
+          <Link href="/dashboard">
+            <BrandLogo size="md" />
           </Link>
           <button
             onClick={onClose}

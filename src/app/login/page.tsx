@@ -2,7 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { usingDefaultPassword } from "@/server/auth";
 import { LoginForm } from "@/components/auth/login-form";
-import { APP_NAME } from "@/lib/constants";
+import { BrandLogo } from "@/components/brand-logo";
+import { APP_TAGLINE } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -16,15 +17,12 @@ export default async function LoginPage() {
   return (
     <main className="flex min-h-dvh items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary font-semibold text-primary-foreground">
-            K
-          </span>
-          <span className="text-xl font-semibold tracking-tight">{APP_NAME}</span>
+        <div className="mb-8">
+          <BrandLogo size="lg" />
         </div>
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
         <p className="mt-1 mb-6 text-sm text-foreground-muted">
-          Sign in to your AI real estate assistant.
+          Sign in to manage your WhatsApp leads and listings. {APP_TAGLINE}
         </p>
         <LoginForm defaultEmail={agent?.email ?? ""} hintPassword={hint} />
 

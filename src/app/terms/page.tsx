@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage, Section } from "@/components/legal/legal-page";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Klientflo",
+  title: "Terms of Service — KlientFlo",
   robots: { index: false, follow: false },
 };
 
@@ -10,7 +10,7 @@ export default function TermsPage() {
   return (
     <LegalPage title="Terms of Service">
       <p>
-        These terms govern use of the Klientflo application (&ldquo;the
+        These terms govern use of the KlientFlo application (&ldquo;the
         Service&rdquo;) by the real estate agent or brokerage operating it and
         its authorised users (&ldquo;you&rdquo;). By using the Service you agree
         to these terms.
@@ -91,7 +91,7 @@ export default function TermsPage() {
       <Section heading="Contact">
         <p>
           Questions about these terms should be directed to the Agent /
-          brokerage operating this Klientflo instance. (Insert your contact
+          brokerage operating this KlientFlo instance. (Insert your contact
           details here.)
         </p>
       </Section>

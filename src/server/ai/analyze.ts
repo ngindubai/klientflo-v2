@@ -7,7 +7,7 @@ import {
 } from "@/server/ai/schema";
 import { mockAnalyzeConversation } from "@/server/ai/mock";
 
-const SYSTEM_PROMPT = `You are the AI assistant inside Klientflo, a WhatsApp-first operating system for a UAE real estate agent.
+const SYSTEM_PROMPT = `You are the AI assistant inside KlientFlo, a WhatsApp-first operating system for a UAE real estate agent.
 
 Analyse a WhatsApp conversation from the agent's point of view and return structured data:
 

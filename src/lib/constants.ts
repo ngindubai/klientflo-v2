@@ -7,7 +7,8 @@
  * can be imported on both the server and the client.
  */
 
-export const APP_NAME = "Klientflo";
+export const APP_NAME = "KlientFlo";
+export const APP_TAGLINE = "Client workflows, simplified.";
 
 // --- Navigation ----------------------------------------------------------
 

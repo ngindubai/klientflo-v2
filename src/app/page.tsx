@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { APP_NAME } from "@/lib/constants";
+import { BrandLogo } from "@/components/brand-logo";
+import { APP_TAGLINE } from "@/lib/constants";
 
 const HIGHLIGHTS = [
   "Monitors every WhatsApp conversation and flags what's urgent",
@@ -12,13 +13,15 @@ export default function Home() {
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-2xl">
+        <BrandLogo size="lg" className="mb-8" />
+
         <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-muted px-3 py-1 text-sm font-medium text-primary">
           <span className="size-2 rounded-full bg-accent" />
           WhatsApp-first · AI-powered · Built for UAE real estate
         </div>
 
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          {APP_NAME}
+          Client workflows, simplified.
         </h1>
         <p className="mt-4 text-lg text-foreground-muted">
           Your AI real estate assistant — not another CRM. It watches your
@@ -44,10 +47,15 @@ export default function Home() {
           >
             Open dashboard
           </Link>
-          <span className="inline-flex items-center rounded-[var(--radius-card)] border border-border px-5 py-3 font-medium text-foreground-muted">
-            Phase A · Foundation
-          </span>
+          <Link
+            href="/login"
+            className="inline-flex items-center rounded-[var(--radius-card)] border border-border px-5 py-3 font-medium text-foreground transition-colors hover:bg-surface-muted"
+          >
+            Sign in
+          </Link>
         </div>
+
+        <p className="mt-10 text-xs text-foreground-muted">{APP_TAGLINE}</p>
       </div>
     </main>
   );

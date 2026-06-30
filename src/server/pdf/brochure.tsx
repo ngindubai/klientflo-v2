@@ -8,7 +8,7 @@ import {
 import { formatAED } from "@/lib/utils";
 import { resolveMergeFields, type MergeProperty, type MergeAgent } from "./merge";
 
-const BRAND = "#2563eb";
+const BRAND = "#108BFF";
 
 const styles = StyleSheet.create({
   page: { paddingVertical: 40, paddingHorizontal: 44, fontSize: 11, color: "#1f2937", fontFamily: "Helvetica" },

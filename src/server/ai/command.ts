@@ -111,7 +111,7 @@ const TOOLS: Anthropic.Tool[] = [
   },
 ];
 
-const SYSTEM_PROMPT = `You are the AI command bar inside Klientflo, a WhatsApp-first operating system for a UAE real estate agent. The agent types or speaks natural-language commands; you pick the single best tool to satisfy each one.
+const SYSTEM_PROMPT = `You are the AI command bar inside KlientFlo, a WhatsApp-first operating system for a UAE real estate agent. The agent types or speaks natural-language commands; you pick the single best tool to satisfy each one.
 
 Guidance:
 - For lookups ("show urgent WhatsApps", "find 2-bed apartments in Dubai Marina under 2 million", "today's meetings") use the matching search/show tool.

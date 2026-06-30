@@ -1,34 +1,52 @@
 @import "tailwindcss";
 
 /*
- * Klientflo design tokens.
- * A clean, modern, WhatsApp-first palette: deep indigo primary with an
- * emerald accent (nods to WhatsApp green) on a soft neutral canvas.
+ * KlientFlo design tokens — brand pack v1.
+ * Brand blue (#108BFF) primary with a navy→carbon gradient for brand surfaces,
+ * on an ink/slate/sky neutral system. Inter (body) + Inter Tight (display).
+ * Emerald is kept only for success/positive states. See the brand pack.
  */
 :root {
-  --background: #f7f8fa;
+  /* Brand palette (v1) */
+  --kf-blue: #108bff;
+  --kf-blue-hover: #3ba7fe;
+  --kf-sky: #65c1ff;
+  --kf-navy: #06121f;
+  --kf-carbon: #010407;
+  --kf-ink: #0f172a;
+  --kf-slate: #475569;
+  --kf-slate-soft: #94a3b8;
+  --kf-surface-soft: #f7fbff;
+  --kf-surface-tint: #eaf6ff;
+  --kf-shadow-card: 0 18px 45px rgba(6, 18, 31, 0.08);
+  --kf-shadow-focus: 0 0 0 4px rgba(16, 139, 255, 0.22);
+  --kf-gradient-surface: linear-gradient(135deg, var(--kf-carbon), var(--kf-navy) 45%, var(--kf-blue));
+
+  --background: var(--kf-surface-soft);
   --surface: #ffffff;
-  --surface-muted: #f1f3f7;
-  --foreground: #0f172a;
-  --foreground-muted: #64748b;
-  --border: #e2e8f0;
+  --surface-muted: var(--kf-surface-tint);
+  --foreground: var(--kf-ink);
+  --foreground-muted: var(--kf-slate);
+  --border: #dcecf8;
 
-  --primary: #4f46e5;
+  --primary: var(--kf-blue);
+  --primary-hover: var(--kf-blue-hover);
   --primary-foreground: #ffffff;
-  --primary-muted: #eef2ff;
+  --primary-muted: var(--kf-surface-tint);
 
-  --accent: #16a34a;
+  /* Success / positive accent (kept green for semantic clarity) */
+  --accent: #10b981;
   --accent-foreground: #ffffff;
-  --accent-muted: #f0fdf4;
+  --accent-muted: #ecfdf5;
 
-  /* Urgency scale (1 = calm, 5 = immediate action) */
-  --urgency-1: #16a34a;
+  /* Urgency scale (1 = calm, 5 = immediate action) — aligned to brand states */
+  --urgency-1: #10b981;
   --urgency-2: #65a30d;
-  --urgency-3: #ca8a04;
+  --urgency-3: #f59e0b;
   --urgency-4: #ea580c;
-  --urgency-5: #dc2626;
+  --urgency-5: #ef4444;
 
-  --radius: 0.75rem;
+  --radius: 1.25rem;
 }
 
 @theme inline {
@@ -40,6 +58,7 @@
   --color-border: var(--border);
 
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-muted: var(--primary-muted);
 
@@ -55,41 +74,56 @@
 
   --radius-card: var(--radius);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-inter-tight);
   --font-mono: var(--font-geist-mono);
 }
 
+/* Brand gradient surface — for brand moments (login panel, hero, CTAs). */
+.kf-gradient-surface {
+  background-image: var(--kf-gradient-surface);
+  color: #fff;
+}
+
+/* Premium card elevation — soft brand shadow on the standard card. */
+.kf-card-shadow {
+  box-shadow: var(--kf-shadow-card);
+}
+
+/* Dark theme tokens — brand navy/carbon canvas with sky-blue primary. */
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --background: #0b1020;
-    --surface: #131a2e;
-    --surface-muted: #1b2440;
-    --foreground: #e6e9f2;
-    --foreground-muted: #94a3b8;
-    --border: #283150;
-    --primary: #818cf8;
-    --primary-foreground: #0b1020;
-    --primary-muted: #1e2547;
+    --background: var(--kf-carbon);
+    --surface: var(--kf-navy);
+    --surface-muted: #0e2238;
+    --foreground: #eaf2fb;
+    --foreground-muted: #8aa0b8;
+    --border: #16314c;
+    --primary: #3ba7fe;
+    --primary-hover: #65c1ff;
+    --primary-foreground: #04101f;
+    --primary-muted: #0f2c47;
     --accent: #34d399;
     --accent-foreground: #04130c;
-    --accent-muted: #102a1f;
+    --accent-muted: #0c241a;
   }
 }
 
 /* Explicit dark theme (toggle), overrides system preference. */
 :root.dark {
-  --background: #0b1020;
-  --surface: #131a2e;
-  --surface-muted: #1b2440;
-  --foreground: #e6e9f2;
-  --foreground-muted: #94a3b8;
-  --border: #283150;
-  --primary: #818cf8;
-  --primary-foreground: #0b1020;
-  --primary-muted: #1e2547;
+  --background: var(--kf-carbon);
+  --surface: var(--kf-navy);
+  --surface-muted: #0e2238;
+  --foreground: #eaf2fb;
+  --foreground-muted: #8aa0b8;
+  --border: #16314c;
+  --primary: #3ba7fe;
+  --primary-hover: #65c1ff;
+  --primary-foreground: #04101f;
+  --primary-muted: #0f2c47;
   --accent: #34d399;
   --accent-foreground: #04130c;
-  --accent-muted: #102a1f;
+  --accent-muted: #0c241a;
 }
 
 * {
@@ -101,6 +135,12 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Display typeface (Inter Tight) for headings — tight tracking, brand feel. */
+h1, h2, h3, .font-display {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 /* Accessibility: always show a clear keyboard-focus ring, even on elements

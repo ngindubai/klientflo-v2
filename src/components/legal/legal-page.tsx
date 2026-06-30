@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { APP_NAME } from "@/lib/constants";
+import { BrandLogo } from "@/components/brand-logo";
 
 const LAST_UPDATED = "30 June 2026";
 
@@ -13,11 +13,8 @@ export function LegalPage({
 }) {
   return (
     <main className="mx-auto min-h-dvh max-w-3xl px-6 py-12">
-      <Link href="/" className="mb-8 flex items-center gap-2">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-primary font-semibold text-primary-foreground">
-          K
-        </span>
-        <span className="text-lg font-semibold tracking-tight">{APP_NAME}</span>
+      <Link href="/" className="mb-8 inline-flex">
+        <BrandLogo size="md" />
       </Link>
 
       <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
