@@ -48,8 +48,8 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 border-b border-border p-3">
-        <div className="flex items-start gap-2">
+      <div className="flex flex-wrap items-start justify-between gap-2 border-b border-border p-3">
+        <div className="flex min-w-0 items-start gap-2">
           <Link
             href="/inbox"
             className="rounded-md p-1 text-foreground-muted hover:bg-surface-muted lg:hidden"
@@ -57,14 +57,14 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
           >
             <ArrowLeft className="size-4" />
           </Link>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold">{name}</span>
+              <span className="truncate font-semibold">{name}</span>
               {conversation.urgency >= 3 && (
                 <UrgencyBadge level={conversation.urgency} />
               )}
             </div>
-            <p className="text-xs text-foreground-muted">
+            <p className="truncate text-xs text-foreground-muted">
               {conversation.contactPhone}
               {conversation.classification
                 ? ` · ${humanizeEnum(conversation.classification)}`
@@ -72,7 +72,7 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex items-center gap-2">
           <TagSelector
             conversationId={conversation.id}
             category={conversation.client?.category ?? null}

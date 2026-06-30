@@ -6,11 +6,15 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Workflow
 
-- **Always commit and push to `claude/great-carson-8mjbfm`.** This is the
-  production branch and the one Render deploys from (`render.yaml` → `branch:
-  claude/great-carson-8mjbfm`, `autoDeploy: true`). Do not create or push to
-  other branches unless explicitly asked.
-- Before each push: `tsc --noEmit`, `eslint`, and `next build` must be green.
+- **Single branch: `claude/great-carson-8mjbfm`.** This is the one and only
+  working branch — the production branch Render deploys from (`render.yaml` →
+  `branch: claude/great-carson-8mjbfm`, `autoDeploy: true`). Always commit and
+  push directly to it. Do not create, use, or push to any other branch.
+  (Stale `main` / `claude/remove-demo-password-gate-ewsctv` remotes may linger
+  because the environment's git proxy blocks ref deletion — ignore them; delete
+  via the GitHub UI if desired.)
+- Before each push: `tsc --noEmit`, `eslint`, `next build`, and `pnpm test`
+  must be green.
 
 # Klientflo — project guide
 

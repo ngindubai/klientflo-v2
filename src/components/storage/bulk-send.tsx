@@ -164,7 +164,9 @@ export function BulkSend({
                     <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs text-foreground-muted">
                       {CONTACT_CATEGORY_LABELS[c.category]}
                     </span>
-                    <span className="text-xs text-foreground-muted">{c.phone}</span>
+                    <span className="hidden text-xs text-foreground-muted sm:inline">
+                      {c.phone}
+                    </span>
                   </label>
                 ))
               )}

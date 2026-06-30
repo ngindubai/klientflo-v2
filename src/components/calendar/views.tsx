@@ -34,7 +34,10 @@ export function MonthView({
 }) {
   const byDay = groupByDay(events);
   return (
-    <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
+    <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-surface">
+      {/* Min width keeps day cells usable on phones; the month scrolls
+          horizontally instead of squishing to unreadable columns. */}
+      <div className="min-w-[640px]">
       <div className="grid grid-cols-7 border-b border-border">
         {WEEKDAY_LABELS.map((d) => (
           <div
@@ -87,6 +90,7 @@ export function MonthView({
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );
