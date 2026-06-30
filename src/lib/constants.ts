@@ -20,6 +20,7 @@ export const NAV_ITEMS = [
   { label: "Properties", href: "/properties", icon: "properties" },
   { label: "Owners", href: "/owners", icon: "owners" },
   { label: "Pipeline", href: "/pipeline", icon: "pipeline" },
+  { label: "Reports", href: "/reports", icon: "reports" },
   { label: "Calendar", href: "/calendar", icon: "calendar" },
   { label: "Documents", href: "/documents", icon: "documents" },
   { label: "Settings", href: "/settings", icon: "settings" },
