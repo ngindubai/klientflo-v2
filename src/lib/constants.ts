@@ -15,6 +15,8 @@ export const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
   { label: "WhatsApp Inbox", href: "/inbox", icon: "inbox" },
   { label: "Clients", href: "/clients", icon: "clients" },
+  { label: "Agents", href: "/agents", icon: "agents" },
+  { label: "Investors", href: "/investors", icon: "investors" },
   { label: "Properties", href: "/properties", icon: "properties" },
   { label: "Pipeline", href: "/pipeline", icon: "pipeline" },
   { label: "Calendar", href: "/calendar", icon: "calendar" },

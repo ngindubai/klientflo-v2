@@ -21,6 +21,7 @@ export default async function EditClientPage({
     phone: client.phone,
     email: client.email ?? "",
     nationality: client.nationality ?? "",
+    agencyName: client.agencyName ?? "",
     clientType: client.clientType ?? "",
     budgetMin: client.budgetMin?.toString() ?? "",
     budgetMax: client.budgetMax?.toString() ?? "",

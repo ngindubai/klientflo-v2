@@ -32,6 +32,7 @@ export function ClientForm({ mode, id, initial }: Props) {
     phone: initial?.phone ?? "",
     email: initial?.email ?? "",
     nationality: initial?.nationality ?? "",
+    agencyName: initial?.agencyName ?? "",
     clientType: initial?.clientType ?? "",
     budgetMin: initial?.budgetMin ?? "",
     budgetMax: initial?.budgetMax ?? "",
@@ -85,6 +86,9 @@ export function ClientForm({ mode, id, initial }: Props) {
         </Field>
         <Field label="Nationality">
           <input className={inputClass} value={form.nationality} onChange={set("nationality")} />
+        </Field>
+        <Field label="Agency (for agents)">
+          <input className={inputClass} value={form.agencyName} onChange={set("agencyName")} placeholder="Agency name" />
         </Field>
       </Section>
 

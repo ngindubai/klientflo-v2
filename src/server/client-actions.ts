@@ -13,6 +13,7 @@ export type ClientInput = {
   phone: string;
   email?: string;
   nationality?: string;
+  agencyName?: string;
   clientType?: ClientType | "";
   budgetMin?: string;
   budgetMax?: string;
@@ -41,6 +42,7 @@ function toData(input: ClientInput) {
     phone: input.phone.trim(),
     email: clean(input.email),
     nationality: clean(input.nationality),
+    agencyName: clean(input.agencyName),
     clientType: input.clientType ? (input.clientType as ClientType) : null,
     budgetMin: num(input.budgetMin),
     budgetMax: num(input.budgetMax),

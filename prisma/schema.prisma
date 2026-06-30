@@ -178,6 +178,8 @@ model Contact {
   email       String?
   nationality String?
   clientType  ClientType?
+  // External-agent (broker) detail, used by the Agents section.
+  agencyName  String?
   // Extracted requirements
   budgetMin    Int?
   budgetMax    Int?
