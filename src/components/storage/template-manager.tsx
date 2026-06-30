@@ -2,16 +2,24 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, FileText, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, ExternalLink, Send } from "lucide-react";
 import {
   createTemplate,
   updateTemplate,
   deleteTemplate,
 } from "@/server/template-actions";
 import { MERGE_FIELDS } from "@/server/pdf/merge";
+import { BulkSend } from "@/components/storage/bulk-send";
+import type { ContactCategory } from "@/lib/constants";
 
 type Template = { id: string; name: string; kind: string; body: string };
 type PropertyOption = { id: string; title: string };
+type Contact = {
+  id: string;
+  name: string;
+  phone: string;
+  category: ContactCategory;
+};
 
 const inputClass =
   "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-primary";
@@ -21,12 +29,27 @@ const KINDS = ["brochure", "offer", "custom"];
 export function TemplateManager({
   templates,
   properties,
+  contacts,
 }: {
   templates: Template[];
   properties: PropertyOption[];
+  contacts: Contact[];
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<Template | "new" | null>(null);
+  const [sending, setSending] = useState<Template | null>(null);
+
+  if (sending) {
+    return (
+      <BulkSend
+        templateId={sending.id}
+        templateName={sending.name}
+        properties={properties}
+        contacts={contacts}
+        onClose={() => setSending(null)}
+      />
+    );
+  }
 
   if (editing) {
     return (
@@ -77,6 +100,13 @@ export function TemplateManager({
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
+                  <button
+                    onClick={() => setSending(t)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-surface-muted"
+                    title="Send to clients"
+                  >
+                    <Send className="size-3.5" /> Send
+                  </button>
                   <button
                     onClick={() => setEditing(t)}
                     className="rounded-md border border-border p-1.5 text-foreground-muted hover:bg-surface-muted"

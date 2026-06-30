@@ -44,6 +44,44 @@ export async function sendText(to: string, body: string): Promise<SendResult> {
   return { externalId: data.messages?.[0]?.id ?? `wamid-${Date.now()}`, mock: false };
 }
 
+/**
+ * Send a document (e.g. a generated PDF) by public link. Falls back to a mock
+ * id when unconfigured. `link` must be publicly reachable by WhatsApp in
+ * production (a signed S3 URL); in demo mode the call is mocked.
+ */
+export async function sendDocument(
+  to: string,
+  link: string,
+  filename: string,
+  caption?: string,
+): Promise<SendResult> {
+  if (!isWhatsAppConfigured()) {
+    return { externalId: `mock-${Date.now()}`, mock: true };
+  }
+  const res = await fetch(
+    `https://graph.facebook.com/${GRAPH_VERSION}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to,
+        type: "document",
+        document: { link, filename, ...(caption ? { caption } : {}) },
+      }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`WhatsApp send failed: ${res.status} ${await res.text()}`);
+  }
+  const data = await res.json();
+  return { externalId: data.messages?.[0]?.id ?? `wamid-${Date.now()}`, mock: false };
+}
+
 /** Download inbound media (voice/image/document) by its WhatsApp media id. */
 export async function downloadMedia(
   mediaId: string,

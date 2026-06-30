@@ -5,6 +5,7 @@ import { MediaManager } from "@/components/storage/media-manager";
 import { getTemplates } from "@/server/templates";
 import { getMedia } from "@/server/media";
 import { getPropertyOptions } from "@/server/properties";
+import { getContactsBrief } from "@/server/clients";
 
 export const dynamic = "force-dynamic";
 
@@ -56,11 +57,18 @@ export default async function StoragePage({
 }
 
 async function TemplatesTab() {
-  const [templates, properties] = await Promise.all([
+  const [templates, properties, contacts] = await Promise.all([
     getTemplates(),
     getPropertyOptions(),
+    getContactsBrief(),
   ]);
-  return <TemplateManager templates={templates} properties={properties} />;
+  return (
+    <TemplateManager
+      templates={templates}
+      properties={properties}
+      contacts={contacts}
+    />
+  );
 }
 
 async function MediaTab({ type }: { type: "floorplan" | "video" }) {

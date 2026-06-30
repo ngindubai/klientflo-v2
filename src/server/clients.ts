@@ -55,3 +55,13 @@ export async function getClient(id: string) {
 }
 
 export type ClientWithUrgency = Awaited<ReturnType<typeof getClients>>[number];
+
+/** Brief contact list (any category, with a phone) for recipient pickers. */
+export async function getContactsBrief() {
+  const agent = await getCurrentAgent();
+  return prisma.contact.findMany({
+    where: { agentId: agent.id, NOT: { category: "spam" } },
+    select: { id: true, name: true, phone: true, category: true },
+    orderBy: { name: "asc" },
+  });
+}
