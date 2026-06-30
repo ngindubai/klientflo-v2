@@ -1,8 +1,9 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 import {
   hashPassword as hashPasswordPure,
   verifyPassword,
@@ -65,6 +66,12 @@ export async function usingDefaultPassword(): Promise<boolean> {
 }
 
 export async function login(email: string, password: string) {
+  // Throttle brute-force attempts per client IP (10 / 5 min).
+  const ip = clientIp(await headers());
+  if (!rateLimit(`login:${ip}`, 10, 5 * 60_000).ok) {
+    throw new Error("Too many attempts. Please wait a few minutes and try again.");
+  }
+
   const normalized = email.trim().toLowerCase();
   let user = await prisma.user.findUnique({ where: { email: normalized } });
 

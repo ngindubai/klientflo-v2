@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
+import { CONTACT_CATEGORIES } from "@/lib/constants";
 import {
-  CONTACT_CATEGORIES,
-  type ContactCategory,
-} from "@/lib/constants";
+  medianResponseMinutes,
+  rollupByCategory,
+  type TimedMessage,
+} from "@/lib/reporting-calc";
 
 export const REPORT_RANGES = [7, 30, 90] as const;
 export type ReportRange = (typeof REPORT_RANGES)[number];
@@ -17,6 +19,7 @@ export type Report = {
     newConversations: number;
     viewingsBooked: number;
     dealsCreated: number;
+    medianResponseMinutes: number;
   };
   messagesByCategory: { category: string; count: number }[];
   conversationsByClassification: { classification: string; count: number }[];
@@ -54,8 +57,11 @@ export async function getReport(days: ReportRange = 30): Promise<Report> {
       where: ranged,
       select: {
         direction: true,
+        conversationId: true,
+        createdAt: true,
         conversation: { select: { client: { select: { category: true } } } },
       },
+      orderBy: { createdAt: "asc" },
     }),
     prisma.conversation.groupBy({
       by: ["classification"],
@@ -70,15 +76,18 @@ export async function getReport(days: ReportRange = 30): Promise<Report> {
   ]);
 
   // Messages by contact tag (untagged contacts bucket as "untagged").
-  const catCounts = new Map<string, number>();
-  for (const m of messages) {
-    const cat: ContactCategory | "untagged" =
-      m.conversation?.client?.category ?? "untagged";
-    catCounts.set(cat, (catCounts.get(cat) ?? 0) + 1);
-  }
-  const messagesByCategory = [...CONTACT_CATEGORIES, "untagged"]
-    .map((category) => ({ category, count: catCounts.get(category) ?? 0 }))
-    .filter((r) => r.count > 0);
+  const messagesByCategory = rollupByCategory(
+    messages.map((m) => m.conversation?.client?.category ?? "untagged"),
+    CONTACT_CATEGORIES,
+  );
+
+  // Median time from an inbound message to the next outbound reply.
+  const timed: TimedMessage[] = messages.map((m) => ({
+    conversationId: m.conversationId,
+    direction: m.direction,
+    createdAt: m.createdAt,
+  }));
+  const medianResponse = medianResponseMinutes(timed);
 
   const conversationsByClassification = classRows
     .filter((r) => r.classification)
@@ -101,6 +110,7 @@ export async function getReport(days: ReportRange = 30): Promise<Report> {
       newConversations,
       viewingsBooked,
       dealsCreated,
+      medianResponseMinutes: medianResponse,
     },
     messagesByCategory,
     conversationsByClassification,

@@ -125,6 +125,25 @@ async function main() {
       where: { agentId, label: data.label },
     })) ?? prisma.suggestedAction.create({ data: { agentId, ...data } as never });
 
+  const ensureOwner = async (data: { name: string; phone?: string } & Obj) =>
+    (await prisma.owner.findFirst({
+      where: {
+        agentId,
+        name: data.name,
+        ...(data.phone ? { phone: data.phone as string } : {}),
+      },
+    })) ??
+    prisma.owner.create({ data: { agentId, source: "import", ...data } as never });
+
+  const ensureTemplate = async (data: { name: string } & Obj) =>
+    (await prisma.template.findFirst({ where: { agentId, name: data.name } })) ??
+    prisma.template.create({ data: { agentId, ...data } as never });
+
+  const ensureMedia = async (data: { name: string; type: string } & Obj) =>
+    (await prisma.mediaAsset.findFirst({
+      where: { agentId, name: data.name, type: data.type as string },
+    })) ?? prisma.mediaAsset.create({ data: { agentId, ...data } as never });
+
   // --- Properties --------------------------------------------------------
   const marina = await ensureProperty({
     listingId: "PF-1001",
@@ -332,6 +351,78 @@ async function main() {
   await ensureAction({ type: "follow_up", label: "Follow up with James on the Palm offer", reason: "Offer submitted 27h ago with no response yet.", clientId: james.id });
   await ensureAction({ type: "send_brochure", label: "Send Raj the Downtown 2BR comparison", reason: "Hot cash buyer matching the Downtown 2BR.", clientId: raj.id });
   await ensureAction({ type: "book_viewing", label: "Confirm Chen's JVC viewing for Saturday", reason: "Hot tenant lead awaiting confirmation.", clientId: chen.id });
+
+  // --- Agents & investors (tagged contacts) ------------------------------
+  await ensureClient({
+    name: "Khalid Rahman", phone: "+971551112200", email: "khalid@betterhomes.example",
+    category: "agent", agencyName: "Better Homes", area: "Dubai Marina",
+    notes: "Co-broke partner — shares Marina & JLT stock.",
+  });
+  await ensureClient({
+    name: "Lena Fischer", phone: "+971551113300", email: "lena@allsopp.example",
+    category: "agent", agencyName: "Allsopp & Allsopp", area: "Downtown Dubai",
+    notes: "Good for Downtown & Business Bay listings.",
+  });
+  await ensureClient({
+    name: "Daniel Roberts", phone: "+971552224400", email: "d.roberts@example.com",
+    category: "investor", nationality: "British", area: "Business Bay",
+    budgetMin: 800_000, budgetMax: 1_500_000, propertyType: "Apartment",
+    notes: "ROI-focused; off-plan and high-yield studios. Target 7%+ gross.",
+  });
+  await ensureClient({
+    name: "Aisha Noor", phone: "+971552225500", email: "aisha.noor@example.com",
+    category: "investor", nationality: "Emirati", area: "Jumeirah Lake Towers",
+    budgetMin: 500_000, budgetMax: 900_000, propertyType: "Apartment",
+    notes: "Building a rental portfolio in JLT & JVC.",
+  });
+
+  // --- Owners database ---------------------------------------------------
+  const owners = [
+    { name: "Yusuf Demir", phone: "+971561110001", email: "yusuf.d@example.com", area: "Dubai Marina", building: "Marina Gate", unit: "1204", notes: "Open to selling at the right price." },
+    { name: "Maria Santos", phone: "+971561110002", area: "Dubai Marina", building: "Marina Gate", unit: "2810" },
+    { name: "Arjun Mehta", phone: "+971561110003", email: "arjun.m@example.com", area: "Downtown Dubai", building: "The Address", unit: "508", notes: "Considering rental." },
+    { name: "Sara Khalifa", phone: "+971561110004", area: "Downtown Dubai", building: "Burj Views", unit: "1102" },
+    { name: "Tom Becker", phone: "+971561110005", area: "Business Bay", building: "Executive Towers", unit: "B-2207" },
+    { name: "Ananya Rao", phone: "+971561110006", email: "ananya.r@example.com", area: "Jumeirah Lake Towers", building: "Lake Terrace", unit: "3304", notes: "Owns two units." },
+    { name: "Omar Farouk", phone: "+971561110007", area: "Jumeirah Lake Towers", building: "Lake Terrace", unit: "1809" },
+    { name: "Helen Park", phone: "+971561110008", area: "Palm Jumeirah", building: "Garden Homes", unit: "Frond M-12" },
+    { name: "Viktor Ivanov", phone: "+971561110009", area: "Business Bay", building: "Executive Towers", unit: "M-1503", notes: "Cash buyer for more units too." },
+    { name: "Grace Mwangi", phone: "+971561110010", area: "Jumeirah Village Circle", building: "Belgravia", unit: "504" },
+  ];
+  for (const o of owners) await ensureOwner(o);
+
+  // --- Storage: a brochure template + media ------------------------------
+  await ensureTemplate({
+    name: "Standard property brochure",
+    kind: "brochure",
+    body:
+      "Presenting {{property.title}} in {{property.area}}.\n\n" +
+      "Priced at {{property.price}} — {{property.bedrooms}} bed, {{property.bathrooms}} bath, {{property.size}}.\n\n" +
+      "{{property.description}}\n\n" +
+      "For viewings contact {{agent.name}} on {{agent.phone}}.",
+  });
+  await ensureTemplate({
+    name: "New listing alert",
+    kind: "custom",
+    body:
+      "New to market: {{property.title}} ({{property.area}}).\n" +
+      "{{property.bedrooms}}-bed at {{property.price}}. Interested? Reply and I'll send full details. — {{agent.name}}",
+  });
+  await ensureMedia({
+    type: "floorplan", name: "Marina Gate 2BR — floorplan",
+    externalUrl: "https://example.com/floorplans/marina-gate-2br.pdf",
+    propertyId: marina.id,
+  });
+  await ensureMedia({
+    type: "video", name: "Marina 2BR — walkthrough",
+    externalUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    propertyId: marina.id,
+  });
+  await ensureMedia({
+    type: "video", name: "Palm villa — cinematic tour",
+    externalUrl: "https://vimeo.com/76979871",
+    propertyId: palm.id,
+  });
 
   console.log(`Seeded/updated demo data for ${agent.email}.`);
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { getReport, REPORT_RANGES, type ReportRange } from "@/server/reporting";
+import { formatMinutes } from "@/lib/reporting-calc";
 import {
   CONTACT_CATEGORY_LABELS,
   humanizeEnum,
@@ -62,7 +63,10 @@ export default async function ReportsPage({
     { label: "Sent", value: report.kpis.outbound },
     { label: "New leads", value: report.kpis.newConversations },
     { label: "Viewings booked", value: report.kpis.viewingsBooked },
-    { label: "Deals created", value: report.kpis.dealsCreated },
+    {
+      label: "Median response",
+      value: formatMinutes(report.kpis.medianResponseMinutes),
+    },
   ];
 
   return (

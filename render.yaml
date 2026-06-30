@@ -21,7 +21,7 @@ services:
     plan: free
     region: frankfurt
     branch: claude/great-carson-8mjbfm
-    healthCheckPath: /login
+    healthCheckPath: /api/health
     # --prod=false installs dev tooling (prisma, typescript, tailwind) for the
     # build; postinstall runs `prisma generate`.
     buildCommand: pnpm install --prod=false && pnpm build

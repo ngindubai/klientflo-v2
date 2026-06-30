@@ -5,17 +5,23 @@
 > auto-tagging, Agents/Investors sections, owners database, reporting, storage
 > hub (templates→PDF via @react-pdf, floorplans, videos), and bulk PDF send.
 >
-> **Track A (go-live hardening) — in progress:**
+> **Track A (go-live hardening) — done in code:**
 > - ✅ S3 storage adapter (uploads persist off Render's ephemeral disk)
 > - ✅ Auth hardening — `User` accounts, scrypt hashing, expiring+secure
 >   sessions, Team management UI (gate intentionally left open)
-> - ✅ WhatsApp webhook signature enforcement (already enforced when
->   `WHATSAPP_APP_SECRET` is set)
-> - ✅ Test suite (`pnpm test`, vitest) — CSV import, merge fields, auth crypto
-> - ✅ Pagination on contacts / agents / investors / owners
-> - ⬜ Remaining: error/empty-state polish, mobile pass, `middleware`→`proxy`
->   rename, and the ops/credentials items (WhatsApp/Claude/S3 creds, DB
->   backups, monitoring) — see `docs/HANDOVER-PLAN.html`.
+> - ✅ WhatsApp webhook signature enforcement + rate limiting (webhook + login)
+> - ✅ Test suite (`pnpm test`, vitest, 30 tests) — CSV import, merge fields,
+>   auth crypto, matching engine, reporting calc
+> - ✅ Pagination on contacts / agents / investors / owners / inbox
+> - ✅ Mobile responsiveness pass
+> - ✅ Error boundary, 404, `/api/health`, robots noindex, loading skeleton
+> - ✅ `middleware` → `proxy` (Next 16); accessibility focus-visible +
+>   reduced-motion; reporting median-response metric
+> - ✅ Demo data extended to Owners / Storage (templates + media) / Agents /
+>   Investors so every section demos populated
+> - ⬜ Remaining (not code): PDF brochure branding (owner is doing this), API
+>   credentials (WhatsApp/Claude/S3/speech), DB backups, monitoring, custom
+>   domain, legal/PDPL — see `docs/HANDOVER-PLAN.html`.
 >
 > Everything verified locally with `tsc --noEmit`, `eslint`, `next build`, and
 > `pnpm test` (all green). Migrations are applied at deploy by `prisma migrate

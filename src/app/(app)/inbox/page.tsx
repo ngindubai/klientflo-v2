@@ -4,7 +4,13 @@ import { MessageThread } from "@/components/inbox/message-thread";
 import { InboxFilters } from "@/components/inbox/inbox-filters";
 import { SimulateInboundButton } from "@/components/inbox/simulate-inbound-button";
 import { Card } from "@/components/ui/card";
-import { getConversations, getConversation } from "@/server/inbox";
+import { Pager } from "@/components/ui/pager";
+import {
+  getConversations,
+  getConversation,
+  getConversationsCount,
+  CONVERSATIONS_PAGE_SIZE,
+} from "@/server/inbox";
 import { isWhatsAppConfigured } from "@/server/whatsapp";
 import { cn } from "@/lib/utils";
 
@@ -18,16 +24,20 @@ export default async function InboxPage({
     priority?: string;
     category?: string;
     tag?: string;
+    page?: string;
   }>;
 }) {
-  const { c, priority, category, tag } = await searchParams;
+  const { c, priority, category, tag, page } = await searchParams;
   const minUrgency = priority ? Number(priority) : undefined;
-  const [conversations, active] = await Promise.all([
-    getConversations({
-      minUrgency,
-      category: category || undefined,
-      tag: tag || undefined,
-    }),
+  const filters = {
+    minUrgency,
+    category: category || undefined,
+    tag: tag || undefined,
+  };
+  const currentPage = Number(page) || 1;
+  const [conversations, total, active] = await Promise.all([
+    getConversations(filters, currentPage),
+    getConversationsCount(filters),
     c ? getConversation(c) : Promise.resolve(null),
   ]);
 
@@ -61,6 +71,19 @@ export default async function InboxPage({
           ) : (
             <ConversationList conversations={conversations} activeId={c} />
           )}
+          <div className="px-3 pb-3">
+            <Pager
+              page={currentPage}
+              pageSize={CONVERSATIONS_PAGE_SIZE}
+              total={total}
+              basePath="/inbox"
+              query={{
+                ...(priority ? { priority } : {}),
+                ...(category ? { category } : {}),
+                ...(tag ? { tag } : {}),
+              }}
+            />
+          </div>
         </div>
 
         {/* Thread */}

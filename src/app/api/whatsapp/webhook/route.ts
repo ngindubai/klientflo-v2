@@ -7,6 +7,7 @@ import {
 } from "@/server/whatsapp";
 import { ingestInbound } from "@/server/whatsapp-ingest";
 import { getCurrentAgent } from "@/server/agent";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 // GET — Meta webhook verification handshake.
 export async function GET(req: Request) {
@@ -20,6 +21,15 @@ export async function GET(req: Request) {
 
 // POST — inbound messages and status updates.
 export async function POST(req: Request) {
+  // Coarse abuse guard (signature is the real auth); 300 requests/min per IP.
+  const rl = rateLimit(`wh:${clientIp(req.headers)}`, 300, 60_000);
+  if (!rl.ok) {
+    return new NextResponse("Too many requests", {
+      status: 429,
+      headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) },
+    });
+  }
+
   const raw = await req.text();
   const signature = req.headers.get("x-hub-signature-256");
   if (!verifySignature(raw, signature)) {
