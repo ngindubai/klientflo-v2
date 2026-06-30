@@ -1,23 +1,12 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-// Redirect unauthenticated users to /login. The session cookie's authenticity
-// is verified at the data layer (HMAC); this is the UX gate. Public paths:
-// the landing page, /login, and /api (the WhatsApp webhook has no cookie).
-export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  if (
-    pathname === "/" ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/api")
-  ) {
-    return NextResponse.next();
-  }
-
-  if (!req.cookies.get("kf_session")) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
+// Demo access gate REMOVED: the live link is intentionally open with no
+// password. Every request is allowed through regardless of session/env.
+//
+// The /login page and the auth route (src/server/auth.ts) are deliberately
+// left in place but unreachable from this middleware, so the password gate can
+// be restored later by reinstating the redirect-to-/login logic below.
+export function middleware() {
   return NextResponse.next();
 }
 
