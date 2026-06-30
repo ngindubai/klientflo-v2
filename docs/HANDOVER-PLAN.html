@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Klientflo — Production Readiness & Client Handover Plan</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --ink:#e8eaf0; --muted:#9aa3b2;
+    --line:#2a2f3a; --brand:#4f7cff; --brand2:#7aa2ff; --green:#34d399; --amber:#fbbf24;
+    --red:#f87171; --purple:#a78bfa; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--brand2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px 90px}
+  header.hero{padding:54px 0 30px;border-bottom:1px solid var(--line);margin-bottom:30px}
+  .kicker{color:var(--brand2);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+  h1{font-size:34px;line-height:1.15;margin:12px 0 8px;letter-spacing:-.02em}
+  h2{font-size:23px;margin:42px 0 6px;letter-spacing:-.01em;scroll-margin-top:20px}
+  h3{font-size:17px;margin:26px 0 6px}
+  .sub{color:var(--muted);max-width:70ch}
+  .meta{color:var(--muted);font-size:13px;margin-top:14px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:720px){.cols-2{grid-template-columns:1fr 1fr}.cols-3{grid-template-columns:1fr 1fr 1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+  .card h3{margin-top:0}
+  .toc{background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;margin:6px 0 8px}
+  .toc ol{margin:8px 0 0;padding-left:20px;columns:2;column-gap:34px}
+  .toc li{margin:4px 0;break-inside:avoid}
+  .badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid var(--line);vertical-align:middle}
+  .b-block{background:rgba(248,113,113,.13);color:#fecaca;border-color:rgba(248,113,113,.4)}
+  .b-go{background:rgba(52,211,153,.12);color:#bbf7d0;border-color:rgba(52,211,153,.4)}
+  .b-new{background:rgba(167,139,250,.14);color:#ddd6fe;border-color:rgba(167,139,250,.4)}
+  .b-soon{background:rgba(251,191,36,.13);color:#fde68a;border-color:rgba(251,191,36,.4)}
+  ul.check{list-style:none;padding:0;margin:10px 0}
+  ul.check li{position:relative;padding:7px 0 7px 30px;border-bottom:1px dashed var(--line)}
+  ul.check li:last-child{border-bottom:0}
+  ul.check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--brand);border-radius:4px}
+  ul.check li b{color:var(--ink)}
+  .callout{border-left:3px solid var(--amber);background:linear-gradient(90deg,rgba(251,191,36,.10),transparent);padding:14px 18px;border-radius:0 10px 10px 0;margin:16px 0}
+  .callout.danger{border-color:var(--red);background:linear-gradient(90deg,rgba(248,113,113,.12),transparent)}
+  .callout.info{border-color:var(--brand);background:linear-gradient(90deg,rgba(79,124,255,.12),transparent)}
+  .callout h4{margin:0 0 4px;font-size:14px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted)}
+  code,kbd{background:#0b0d12;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cbd5e1}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  tr td:first-child{white-space:nowrap;font-weight:600}
+  .pill{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0 4px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;font-weight:700;font-size:13px;margin-right:8px}
+  .phase{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
+  .phase:last-child{border-bottom:0}
+  .phase .body{flex:1}
+  .phase .tag{font-size:12px;color:var(--muted)}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  .small{font-size:13px;color:var(--muted)}
+  .anchor{color:var(--muted);font-size:14px;font-weight:400}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="kicker">Klientflo · WhatsApp-first OS for UAE real estate</div>
+    <h1>Production Readiness &amp; Client Handover Plan</h1>
+    <p class="sub">What stands between the current demo build and a hardened system you can hand to a client — the go-live integrations, the security and infrastructure work, and the seven new feature workstreams requested. The companion <code>BUILD-NEXT.md</code> turns the feature work into a sequential, build-next checklist.</p>
+    <div class="meta">Prepared 30 June 2026 · Status: all 15 foundation chunks complete, app runs end-to-end in demo mode · Stack: Next.js 16 (App Router, TS) · Prisma/PostgreSQL · Tailwind v4 · Anthropic Claude · WhatsApp Business Cloud API · AWS S3 · Render</div>
+  </header>
+
+  <div class="legend">
+    <span class="badge b-block">Go-live blocker</span>
+    <span class="badge b-go">Integration / credentials</span>
+    <span class="badge b-new">New feature</span>
+    <span class="badge b-soon">Hardening / quality</span>
+  </div>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#summary">Executive summary</a></li>
+      <li><a href="#integrations">1 · Integrations &amp; credentials</a></li>
+      <li><a href="#security">2 · Security &amp; access</a></li>
+      <li><a href="#infra">3 · Data &amp; infrastructure</a></li>
+      <li><a href="#whatsapp">4 · WhatsApp production rules</a></li>
+      <li><a href="#quality">5 · Quality &amp; pre-handover</a></li>
+      <li><a href="#features">6 · New feature workstreams</a></li>
+      <li><a href="#decisions">7 · Confirmed design decisions</a></li>
+      <li><a href="#sequencing">8 · Suggested sequencing</a></li>
+      <li><a href="#open">9 · Open questions</a></li>
+    </ol>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="summary">Executive summary</h2>
+  <p class="sub">The application is feature-complete as a demo: inbox, clients, properties, matching, calendar, pipelines, documents, WhatsApp webhook, voice, AI auto-reply and settings all work end-to-end against mocks. Getting it client-ready is three parallel tracks:</p>
+  <div class="grid cols-3" style="margin-top:14px">
+    <div class="card">
+      <h3>① Make it real</h3>
+      <p class="small">Swap mocks for live credentials — Claude API, WhatsApp Business, S3 storage, speech-to-text — and verify each round-trip in production.</p>
+    </div>
+    <div class="card">
+      <h3>② Make it safe</h3>
+      <p class="small">Restore real authentication (the demo gate was removed), turn on webhook signature checks, lock down storage, size the database, add backups &amp; monitoring, and address UAE PDPL data handling.</p>
+    </div>
+    <div class="card">
+      <h3>③ Make it theirs</h3>
+      <p class="small">Build the seven requested workstreams: contact tagging, Agents/Investors sections, owners database, reporting, template→PDF storage, video/floorplan storage, and bulk PDF send.</p>
+    </div>
+  </div>
+  <div class="callout danger">
+    <h4>Read first — two things will bite at handover if ignored</h4>
+    <p style="margin:0"><b>1. The access gate is currently OFF.</b> We removed the demo password so the live link is open. Before a real client touches production, proper per-user authentication must be restored (see §2). <b>2. The database seed plants demo data</b> for the developer's email on every fresh deploy — a production tenant must start clean (see §3).</p>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="integrations">1 · Integrations &amp; credentials <span class="anchor">— flip from demo mode to live</span></h2>
+  <p class="sub">Everything below is wired behind adapters already; production readiness here means provisioning accounts, obtaining secrets, setting them in the Render dashboard, and verifying the live round-trip. Set all secrets in <b>Render → Environment</b>, never in the repo.</p>
+
+  <h3>1.1 Anthropic Claude <span class="badge b-go">Integration</span></h3>
+  <ul class="check">
+    <li><b>Provision</b> an Anthropic API key with production rate limits; set <code>ANTHROPIC_API_KEY</code> and (optionally) <code>ANTHROPIC_MODEL</code> (defaults to <code>claude-opus-4-8</code>).</li>
+    <li><b>Verify</b> classification, urgency, summarise, requirement-extraction, command bar, auto-reply and reply-suggest all hit the real model — the heuristic mock in <code>src/server/ai/mock.ts</code> silently takes over when the key is missing, so confirm logs show real calls.</li>
+    <li><b>Cost guardrails</b> — set a monthly spend alert; consider caching and a cheaper model for high-volume classification vs. Opus for drafting.</li>
+  </ul>
+
+  <h3>1.2 WhatsApp Business Cloud API <span class="badge b-go">Integration</span> <span class="badge b-block">Longest lead time</span></h3>
+  <p class="small">This is the critical-path integration — Meta review and template approval can take days. Start it first.</p>
+  <ul class="check">
+    <li><b>Meta Business</b> account verified; create a WhatsApp Business Account (WABA) and register the business phone number (it cannot already be on the consumer WhatsApp app).</li>
+    <li><b>Permanent token</b> — create a System User and generate a non-expiring access token → <code>WHATSAPP_ACCESS_TOKEN</code>. Capture <code>WHATSAPP_PHONE_NUMBER_ID</code> and <code>WHATSAPP_BUSINESS_ACCOUNT_ID</code>.</li>
+    <li><b>Webhook</b> — point Meta at <code>https://&lt;your-domain&gt;/api/whatsapp/webhook</code>, set <code>WHATSAPP_VERIFY_TOKEN</code> (GET challenge) and <code>WHATSAPP_APP_SECRET</code> (so inbound payload signatures are verified — currently optional, must be ON in prod).</li>
+    <li><b>Message templates</b> — submit and get approval for every proactive/outbound-outside-24h template (follow-ups, viewing invites, brochure delivery). <b>Bulk PDF send depends on this.</b></li>
+    <li><b>Display name &amp; quality</b> — get the display name approved; understand your messaging tier (1K → 10K → 100K → unlimited) and how to ramp.</li>
+    <li><b>Verify</b> a real inbound message creates a conversation + runs AI analysis, and a real outbound (free-form within 24h, and template outside it) delivers.</li>
+  </ul>
+
+  <h3>1.3 AWS S3 storage <span class="badge b-go">Integration</span> <span class="badge b-block">Data-loss risk if skipped</span></h3>
+  <div class="callout danger" style="margin-top:6px">
+    <h4>Render's disk is ephemeral</h4>
+    <p style="margin:0">Anything written to local disk (uploaded documents, and the new floorplans / videos / generated PDFs / templates) is <b>wiped on every redeploy</b>. S3 is not optional for production — it's a blocker.</p>
+  </div>
+  <ul class="check">
+    <li>Create a private bucket; set <code>AWS_REGION</code>, <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, <code>S3_BUCKET</code>. The <code>getStorage()</code> adapter switches from local disk to S3 automatically once these are present.</li>
+    <li>Serve private files through signed URLs (already proxied via <code>/api/files/[id]</code>); set a bucket policy that blocks public access.</li>
+    <li>Add a lifecycle rule for large media (videos) and confirm WhatsApp-downloaded media is persisted to S3 (download tokens expire fast).</li>
+  </ul>
+
+  <h3>1.4 Speech-to-text (voice notes) <span class="badge b-go">Integration</span> <span class="pill">optional</span></h3>
+  <ul class="check">
+    <li>Set <code>SPEECH_TO_TEXT_PROVIDER</code> + <code>SPEECH_TO_TEXT_API_KEY</code> (OpenAI Whisper supported) to transcribe inbound WhatsApp voice notes server-side. Without it, browser dictation still works but inbound voice notes won't auto-transcribe.</li>
+  </ul>
+
+  <h3>1.5 App URL &amp; portals <span class="badge b-go">Integration</span></h3>
+  <ul class="check">
+    <li><code>NEXT_PUBLIC_APP_URL</code> = the real domain (used in invite/brochure links).</li>
+    <li>Property Finder / Bayut import are <b>stubs</b> today. If live portal import is in scope, real API/scrape credentials and per-portal adapters are additional work — confirm whether it's needed for handover.</li>
+    <li><code>BROKER_NUMBER</code> for info-pack/broker routing.</li>
+  </ul>
+
+  <!-- ============================================================= -->
+  <h2 id="security">2 · Security &amp; access <span class="anchor">— the gate is open right now</span></h2>
+  <div class="callout danger">
+    <h4>Authentication must be restored before handover</h4>
+    <p style="margin:0">To make the demo link shareable we changed <code>src/middleware.ts</code> to let <b>every</b> request through. The <code>/login</code> page and <code>src/server/auth.ts</code> are intact but unreachable. Production needs real auth back on — and ideally upgraded from the single shared <code>APP_PASSWORD</code> to per-user accounts.</p>
+  </div>
+  <table>
+    <tr><th>Item</th><th>What's needed</th></tr>
+    <tr><td>Re-enable gate</td><td>Restore the middleware redirect-to-<code>/login</code> logic (a one-line revert is documented in the file's comment).</td></tr>
+    <tr><td>Real accounts</td><td>Move from one shared password to per-agent login (email + password or SSO). The data model is already multi-agent-ready.</td></tr>
+    <tr><td>Webhook signatures</td><td>Enforce <code>WHATSAPP_APP_SECRET</code> verification on inbound webhooks (reject unsigned payloads).</td></tr>
+    <tr><td>Secrets hygiene</td><td>All secrets in Render env; rotate <code>AUTH_SECRET</code>; no secrets in git history.</td></tr>
+    <tr><td>Rate limiting</td><td>Throttle the public webhook and any login endpoint; basic abuse protection.</td></tr>
+    <tr><td>UAE PDPL</td><td>Owner/contact PII handling, WhatsApp opt-in/consent records, data-retention &amp; deletion policy, privacy notice. <span class="small">Legal review recommended.</span></td></tr>
+    <tr><td>Audit trail</td><td>Log who sent what (messages, bulk PDFs) and when — needed for compliance and dispute handling.</td></tr>
+  </table>
+
+  <!-- ============================================================= -->
+  <h2 id="infra">3 · Data &amp; infrastructure <span class="badge b-soon">Hardening</span></h2>
+  <table>
+    <tr><th>Item</th><th>What's needed</th></tr>
+    <tr><td>Clean tenant</td><td>The seed (<code>prisma/seed.ts</code>) plants demo data for the developer's email on every fresh DB. Guard it behind a flag or remove it for the production tenant so the client starts empty.</td></tr>
+    <tr><td>DB sizing</td><td>Currently <code>basic-256mb</code>. Right-size for production volume — especially once the owners database holds thousands of rows.</td></tr>
+    <tr><td>Backups</td><td>Enable automated backups / point-in-time recovery and document a restore drill.</td></tr>
+    <tr><td>Migrations</td><td>Already <code>prisma migrate deploy</code> on boot. Keep migrations forward-only and reviewed.</td></tr>
+    <tr><td>Pagination</td><td>Inbox, clients, owners and reporting lists need server-side pagination/indexing before real data volumes — currently fine for demo sizes only.</td></tr>
+    <tr><td>Monitoring</td><td>Error tracking (e.g. Sentry), uptime checks, log retention, and a real health endpoint (the health check currently points at <code>/login</code>).</td></tr>
+    <tr><td>Background jobs</td><td>Bulk send, CSV import and scrape/refresh want a queue + worker (throttled, retryable) rather than inline request handling.</td></tr>
+  </table>
+
+  <!-- ============================================================= -->
+  <h2 id="whatsapp">4 · WhatsApp production rules <span class="anchor">— these shape the features</span></h2>
+  <div class="callout info">
+    <h4>Why this matters for "send PDFs to multiple clients"</h4>
+    <p style="margin:0">WhatsApp only lets you message a contact freely within <b>24 hours</b> of their last message to you. Outside that window you may only send <b>pre-approved template messages</b>. So bulk PDF send must: (a) use an approved template for cold recipients, (b) attach the PDF as a document, (c) respect per-second rate limits and your messaging tier, and (d) honour opt-in. This becomes a throttled queue, not a simple loop.</p>
+  </div>
+  <ul class="check">
+    <li>Template approval for every proactive message type; maintain a template library mapped to the in-app sender.</li>
+    <li>Opt-in / consent capture and an unsubscribe path.</li>
+    <li>Per-recipient media upload to WhatsApp (or hosted URL) with retry; throttle to tier limits; surface delivery/read receipts.</li>
+    <li>Quality-rating monitoring — bulk sends to unengaged contacts can degrade the number's rating.</li>
+  </ul>
+
+  <!-- ============================================================= -->
+  <h2 id="quality">5 · Quality &amp; pre-handover <span class="badge b-soon">Hardening</span></h2>
+  <div class="grid cols-2">
+    <div class="card"><h3>Engineering</h3>
+      <ul class="check">
+        <li>Automated tests — unit (matching, reporting aggregations, CSV parsing, merge-field rendering) + a few e2e happy paths. Coverage is minimal today.</li>
+        <li>Error &amp; empty states across new screens.</li>
+        <li>Performance pass — pagination, query indexes, image/video lazy-loading.</li>
+        <li>Structured logging &amp; an audit trail for sends.</li>
+      </ul>
+    </div>
+    <div class="card"><h3>Product &amp; ops</h3>
+      <ul class="check">
+        <li>Mobile responsiveness — agents live on their phones.</li>
+        <li>Accessibility pass (labels, contrast, keyboard).</li>
+        <li>Custom domain + SSL; branded login.</li>
+        <li>Admin runbook + a short client training guide.</li>
+        <li>Privacy policy &amp; terms.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="features">6 · New feature workstreams <span class="badge b-new">New</span></h2>
+  <p class="sub">The seven requested edits, each a self-contained chunk in <code>BUILD-NEXT.md</code>. Guiding principle throughout: <b>this is a primary communication system, not a CRM</b> — every feature hangs off the WhatsApp conversation and stays lightweight.</p>
+
+  <div class="card" style="margin-top:8px">
+    <div class="phase"><span class="num">16</span><div class="body">
+      <b>Unified contacts + tagging</b> <span class="tag">— schema foundation for everything after it</span>
+      <p class="small" style="margin:6px 0 0">Introduce a single <code>Contact</code> record with a <b>category</b>: <em>Client, Agent (external broker), Investor, Spam, Personal</em>. Conversations link to a Contact. The existing <code>Client</code> becomes a Contact with category=client; lead-only fields (budget, pipeline) just stay empty for other categories. Inbox gains tag chips + filter-by-tag.</p>
+    </div></div>
+    <div class="phase"><span class="num">17</span><div class="body">
+      <b>AI auto-tagging</b> <span class="tag">— suggests, agent confirms</span>
+      <p class="small" style="margin:6px 0 0">Extend the existing classification layer to predict the contact category on inbound, show it as a one-tap suggestion the agent can accept or override. Spam tag mutes/filters the conversation.</p>
+    </div></div>
+    <div class="phase"><span class="num">18</span><div class="body">
+      <b>Agents &amp; Investors sections</b>
+      <p class="small" style="margin:6px 0 0">Dedicated filtered views (and nav items) for the Agent and Investor categories, each with category-appropriate fields — e.g. investors get target areas / ticket size / asset type; external agents get agency, areas covered. No heavy CRM screens.</p>
+    </div></div>
+    <div class="phase"><span class="num">19</span><div class="body">
+      <b>Owners database</b> <span class="tag">— bulk upload + search</span>
+      <p class="small" style="margin:6px 0 0">A new <code>Owner</code> model with Excel/CSV import (owner name, phone, email, area, building, unit, notes). Fast search/filter by area &amp; building; one-tap WhatsApp/call from a result. Standalone reference list (not auto-linked to listings).</p>
+    </div></div>
+    <div class="phase"><span class="num">20</span><div class="body">
+      <b>Reporting &amp; analytics</b>
+      <p class="small" style="margin:6px 0 0">A metrics dashboard: total WhatsApp messages broken down by category (client / investor / agent…), incoming leads, viewings booked, response time, pipeline conversion. Date-range filter; aggregation queries + charts.</p>
+    </div></div>
+    <div class="phase"><span class="num">21</span><div class="body">
+      <b>Storage hub — templates, floorplans, videos</b>
+      <p class="small" style="margin:6px 0 0">(1) Editable templates with merge fields (<code>{{property.price}}</code>, <code>{{property.area}}</code>…) that render branded <b>PDFs from live property data</b>; (2) floorplan storage; (3) video files &amp; links. All persisted to S3.</p>
+    </div></div>
+    <div class="phase"><span class="num">22</span><div class="body">
+      <b>Bulk PDF send</b>
+      <p class="small" style="margin:6px 0 0">Generate a PDF from a template + property, pick multiple contacts, and send via WhatsApp through a throttled, template-compliant queue (see §4). Delivery status per recipient.</p>
+    </div></div>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="decisions">7 · Confirmed design decisions</h2>
+  <table>
+    <tr><th>Question</th><th>Decision</th></tr>
+    <tr><td>Contacts model</td><td>One unified <code>Contact</code> table with a <b>category</b> field; category-specific filtered sections. Internal tenant stays <code>Agent</code> (the system owner); "Agent" as a tag means an external broker — no code collision since category is a value, not a model.</td></tr>
+    <tr><td>Tagging</td><td><b>AI suggests, agent confirms</b> — auto-classify on inbound with one-tap override.</td></tr>
+    <tr><td>Owners DB</td><td><b>Bulk Excel/CSV upload + search</b>, standalone; one-tap WhatsApp/call. Not auto-linked to properties (can be added later).</td></tr>
+    <tr><td>Templates → PDF</td><td><b>In-app editor with merge fields</b> rendering branded PDFs from live property data.</td></tr>
+  </table>
+
+  <!-- ============================================================= -->
+  <h2 id="sequencing">8 · Suggested sequencing</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>Track A — Go-live (parallel, start now)</h3>
+      <ol class="small">
+        <li>Kick off WhatsApp Business onboarding &amp; template approval (longest lead time).</li>
+        <li>Provision Claude key, S3 bucket, speech key; set all Render env vars.</li>
+        <li>Restore authentication + webhook signature verification.</li>
+        <li>Disable demo seed; size DB; enable backups + monitoring.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Track B — Features (sequential, per BUILD-NEXT.md)</h3>
+      <ol class="small">
+        <li>Chunk 16 — Contacts + tagging (foundation; do first).</li>
+        <li>Chunk 17 — AI auto-tagging.</li>
+        <li>Chunk 18 — Agents &amp; Investors sections.</li>
+        <li>Chunk 19 — Owners database.</li>
+        <li>Chunk 20 — Reporting.</li>
+        <li>Chunk 21 — Storage hub (templates / floorplans / video).</li>
+        <li>Chunk 22 — Bulk PDF send (needs 21 + approved templates).</li>
+      </ol>
+    </div>
+  </div>
+  <p class="small">Each feature chunk ends in a runnable state and works against mocks, so Track B can proceed before Track A's live credentials land.</p>
+
+  <!-- ============================================================= -->
+  <h2 id="open">9 · Open questions <span class="anchor">— answer these before the relevant chunk</span></h2>
+  <ul class="check">
+    <li><b>Branding for PDFs</b> — logo, colours, contact footer, RERA/permit disclaimer text for generated brochures?</li>
+    <li><b>Owners CSV columns</b> — can you share a sample export so the importer maps exactly? Any DLD/PII fields to treat as sensitive?</li>
+    <li><b>Reporting period &amp; targets</b> — which KPIs matter most, what date ranges, and any per-agent vs. whole-office split?</li>
+    <li><b>Portal import</b> — is live Property Finder / Bayut import in scope for handover, or do listings stay manual/seeded?</li>
+    <li><b>Multi-agent</b> — one agent at handover, or several users from day one (drives the auth build)?</li>
+    <li><b>Video hosting</b> — store video files in S3 (cost/bandwidth) or links only (YouTube/Vimeo/Drive)?</li>
+  </ul>
+
+  <footer>
+    Klientflo — internal planning document. Companion file: <code>BUILD-NEXT.md</code> (engineering build plan). Generated for handover preparation; not for external distribution.
+  </footer>
+
+</div>
+</body>
+</html>
