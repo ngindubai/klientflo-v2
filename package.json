@@ -7,7 +7,12 @@
     "node": ">=22"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@prisma/client", "@prisma/engines", "esbuild", "prisma"]
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma"
+    ]
   },
   "scripts": {
     "dev": "next dev",
@@ -25,6 +30,7 @@
     "@anthropic-ai/sdk": "^0.104.1",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@react-pdf/renderer": "^4.5.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.18.0",
     "next": "16.2.9",

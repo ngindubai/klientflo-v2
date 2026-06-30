@@ -142,6 +142,44 @@ model Agent {
   suggestedActions SuggestedAction[]
   scrapeJobs       ScrapeJob[]
   owners           Owner[]
+  templates        Template[]
+  mediaAssets      MediaAsset[]
+}
+
+// --- Storage hub (Chunk 21) ----------------------------------------------
+
+// Editable message/brochure template. `body` is free text with {{merge}}
+// tokens (e.g. {{property.price}}) resolved against a property at render time
+// to generate a branded PDF.
+model Template {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  name      String
+  kind      String   @default("brochure") // brochure | offer | custom
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+}
+
+// Floorplans and videos. A file lives in blob storage (fileUrl) or it's an
+// external link (externalUrl, e.g. a YouTube/Vimeo video).
+model MediaAsset {
+  id          String    @id @default(cuid())
+  agentId     String
+  agent       Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  type        String // floorplan | video
+  name        String
+  fileUrl     String?
+  externalUrl String?
+  propertyId  String?
+  property    Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([agentId, type])
 }
 
 // --- Owners database (Chunk 19) ------------------------------------------
@@ -313,9 +351,10 @@ model Property {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
-  events    Event[]
-  deals     Deal[]
-  documents Document[]
+  events      Event[]
+  deals       Deal[]
+  documents   Document[]
+  mediaAssets MediaAsset[]
 
   @@index([agentId, status])
 }

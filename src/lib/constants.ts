@@ -23,6 +23,7 @@ export const NAV_ITEMS = [
   { label: "Reports", href: "/reports", icon: "reports" },
   { label: "Calendar", href: "/calendar", icon: "calendar" },
   { label: "Documents", href: "/documents", icon: "documents" },
+  { label: "Storage", href: "/storage", icon: "storage" },
   { label: "Settings", href: "/settings", icon: "settings" },
 ] as const;
 

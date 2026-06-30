@@ -10,6 +10,7 @@ import {
   BarChart3,
   CalendarDays,
   FileText,
+  FolderOpen,
   Settings,
   type LucideProps,
 } from "lucide-react";
@@ -28,6 +29,7 @@ const ICONS: Record<string, ComponentType<LucideProps>> = {
   reports: BarChart3,
   calendar: CalendarDays,
   documents: FileText,
+  storage: FolderOpen,
   settings: Settings,
 };
 

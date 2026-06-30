@@ -37,6 +37,16 @@ export async function getProperties(filters: PropertyFilters = {}) {
   });
 }
 
+/** Minimal id + title list for dropdowns (template preview, media linking). */
+export async function getPropertyOptions() {
+  const agent = await getCurrentAgent();
+  return prisma.property.findMany({
+    where: { agentId: agent.id },
+    select: { id: true, title: true },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
 export async function getProperty(id: string) {
   const agent = await getCurrentAgent();
   return prisma.property.findFirst({
