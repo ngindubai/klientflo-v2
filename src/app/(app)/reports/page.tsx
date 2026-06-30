@@ -3,8 +3,10 @@ import { Download } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { ReportDateRange } from "@/components/reports/report-date-range";
+import { Donut } from "@/components/reports/donut";
 import { getReport, REPORT_RANGES, type ReportRange } from "@/server/reporting";
 import { formatMinutes } from "@/lib/reporting-calc";
+import { formatAED } from "@/lib/utils";
 import {
   CONTACT_CATEGORY_LABELS,
   humanizeEnum,
@@ -122,16 +124,44 @@ export default async function ReportsPage({
         ))}
       </div>
 
+      {/* Deal snapshot strip */}
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Card className="p-4">
+          <p className="text-2xl font-semibold tabular-nums">
+            {formatAED(report.pipelineValue)}
+          </p>
+          <p className="mt-1 text-xs text-foreground-muted">Open pipeline value</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-2xl font-semibold tabular-nums text-accent">
+            {report.dealOutcomes.won}
+          </p>
+          <p className="mt-1 text-xs text-foreground-muted">Deals won</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-2xl font-semibold tabular-nums text-urgency-5">
+            {report.dealOutcomes.lost}
+          </p>
+          <p className="mt-1 text-xs text-foreground-muted">Deals lost</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-2xl font-semibold tabular-nums">
+            {report.dealOutcomes.open}
+          </p>
+          <p className="mt-1 text-xs text-foreground-muted">Deals open</p>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="p-5">
           <h2 className="mb-4 text-sm font-semibold">Messages by tag</h2>
           {report.messagesByCategory.length === 0 ? (
             <p className="text-sm text-foreground-muted">No messages in this period.</p>
           ) : (
-            <BarList
-              rows={report.messagesByCategory.map((r) => ({
+            <Donut
+              data={report.messagesByCategory.map((r) => ({
                 label: catLabel(r.category),
-                count: r.count,
+                value: r.count,
               }))}
             />
           )}
@@ -142,9 +172,39 @@ export default async function ReportsPage({
           {report.conversationsByClassification.length === 0 ? (
             <p className="text-sm text-foreground-muted">No conversations in this period.</p>
           ) : (
+            <Donut
+              data={report.conversationsByClassification
+                .slice(0, 6)
+                .map((r) => ({
+                  label: humanizeEnum(r.classification),
+                  value: r.count,
+                }))}
+            />
+          )}
+        </Card>
+
+        <Card className="p-5">
+          <h2 className="mb-4 text-sm font-semibold">Deals by type</h2>
+          {report.dealsByType.length === 0 ? (
+            <p className="text-sm text-foreground-muted">No deals yet.</p>
+          ) : (
+            <Donut
+              data={report.dealsByType.map((r) => ({
+                label: humanizeEnum(r.type),
+                value: r.count,
+              }))}
+            />
+          )}
+        </Card>
+
+        <Card className="p-5">
+          <h2 className="mb-4 text-sm font-semibold">Top demand areas</h2>
+          {report.topAreas.length === 0 ? (
+            <p className="text-sm text-foreground-muted">No client areas recorded yet.</p>
+          ) : (
             <BarList
-              rows={report.conversationsByClassification.map((r) => ({
-                label: humanizeEnum(r.classification),
+              rows={report.topAreas.map((r) => ({
+                label: r.area,
                 count: r.count,
               }))}
             />
