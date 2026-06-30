@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "Klientflo — AI Real Estate Assistant",
   description:
     "A WhatsApp-first, AI-powered operating system for UAE real estate agents.",
+  // The live link is intentionally open (no gate) — keep it out of search
+  // indexes while it's a demo/private tool.
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({
