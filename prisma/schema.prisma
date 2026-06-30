@@ -141,6 +141,30 @@ model Agent {
   deals            Deal[]
   suggestedActions SuggestedAction[]
   scrapeJobs       ScrapeJob[]
+  owners           Owner[]
+}
+
+// --- Owners database (Chunk 19) ------------------------------------------
+// Bulk-uploaded property owners, searchable by area / building. A standalone
+// reference list (not linked to Property/Deal) for outreach via WhatsApp/call.
+
+model Owner {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  name      String
+  phone     String?
+  email     String?
+  area      String?
+  building  String?
+  unit      String?
+  notes     String?
+  source    String   @default("import") // import | manual
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId, area])
+  @@index([agentId, building])
 }
 
 // --- Property-source scrape jobs (async, progress-tracked) ---------------
