@@ -4,6 +4,13 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# Workflow
+
+- **Always commit and push to `main`.** `main` is the single source of truth and
+  the branch Render deploys from (`render.yaml` → `branch: main`, `autoDeploy:
+  true`). Do not create or push to feature branches unless explicitly asked.
+- Before each push: `tsc --noEmit`, `eslint`, and `next build` must be green.
+
 # Klientflo — project guide
 
 WhatsApp-first, AI-powered operating system for UAE real estate agents (not a
