@@ -8,10 +8,32 @@ const REQUIRED_CLIENT_DOCS: Record<DealType, string[]> = {
   rental: ["passport", "emirates_id", "visa"],
 };
 
-export async function getDocuments() {
+export type DocumentFilters = { q?: string; category?: string; expiry?: string };
+
+export async function getDocuments(filters: DocumentFilters = {}) {
   const agent = await getCurrentAgent();
+  const now = new Date();
+  const soon = new Date(now.getTime() + 30 * 86_400_000);
+  const q = filters.q?.trim();
+
   return prisma.document.findMany({
-    where: { agentId: agent.id },
+    where: {
+      agentId: agent.id,
+      ...(filters.category ? { category: filters.category as never } : {}),
+      ...(filters.expiry === "expired"
+        ? { expiresAt: { lt: now } }
+        : filters.expiry === "soon"
+          ? { expiresAt: { gte: now, lt: soon } }
+          : {}),
+      ...(q
+        ? {
+            OR: [
+              { name: { contains: q, mode: "insensitive" } },
+              { type: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
     orderBy: [{ category: "asc" }, { createdAt: "desc" }],
     include: {
       client: { select: { id: true, name: true } },

@@ -3,6 +3,7 @@ import { Upload, FileText, FileWarning, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { DeleteDocButton } from "@/components/documents/delete-doc-button";
+import { DocumentFilters } from "@/components/documents/document-filters";
 import { getDocuments, getMissingDocuments } from "@/server/documents";
 import { humanizeEnum, DOCUMENT_CATEGORIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -22,9 +23,15 @@ function expiryBadge(expiresAt: Date | null) {
   return { text: `Expires ${label}`, class: "bg-surface-muted text-foreground-muted" };
 }
 
-export default async function DocumentsPage() {
+export default async function DocumentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; category?: string; expiry?: string }>;
+}) {
+  const { q, category, expiry } = await searchParams;
+  const anyFilter = Boolean(q || category || expiry);
   const [documents, missing] = await Promise.all([
-    getDocuments(),
+    getDocuments({ q, category, expiry }),
     getMissingDocuments(),
   ]);
 
@@ -42,6 +49,8 @@ export default async function DocumentsPage() {
           </Link>
         }
       />
+
+      <DocumentFilters />
 
       {missing.length > 0 && (
         <Card className="mb-4 border-urgency-4/30 bg-urgency-4/5 p-4">
@@ -75,14 +84,22 @@ export default async function DocumentsPage() {
         </Card>
       )}
 
+      {anyFilter && documents.length === 0 && (
+        <Card className="p-10 text-center text-sm text-foreground-muted">
+          No documents match these filters.
+        </Card>
+      )}
+
       <div className="space-y-4">
-        {DOCUMENT_CATEGORIES.map((category) => {
-          const docs = documents.filter((d) => d.category === category);
+        {DOCUMENT_CATEGORIES.map((cat) => {
+          const docs = documents.filter((d) => d.category === cat);
+          // When filtering, hide categories with no matches to keep it tidy.
+          if (anyFilter && docs.length === 0) return null;
           return (
-            <Card key={category}>
+            <Card key={cat}>
               <div className="flex items-center gap-2 border-b border-border px-4 py-3">
                 <FileText className="size-4 text-foreground-muted" />
-                <h2 className="text-sm font-semibold">{humanizeEnum(category)} documents</h2>
+                <h2 className="text-sm font-semibold">{humanizeEnum(cat)} documents</h2>
                 {docs.length > 0 && (
                   <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-foreground-muted">
                     {docs.length}

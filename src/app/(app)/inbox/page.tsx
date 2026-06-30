@@ -61,7 +61,7 @@ export default async function InboxPage({
         </div>
       </div>
 
-      <Card className="grid flex-1 grid-cols-1 overflow-hidden p-0 lg:grid-cols-[420px_1fr]">
+      <Card className="grid flex-1 grid-cols-1 overflow-hidden p-0 lg:grid-cols-[460px_1fr]">
         {/* Conversation list */}
         <div
           className={cn(
