@@ -1,5 +1,15 @@
 # Klientflo — Build-Next Plan
 
+> **Status (branch `claude/remove-demo-password-gate-ewsctv`):** Track B feature
+> chunks **16–22 are implemented** — unified Contact + tagging, AI auto-tagging,
+> Agents/Investors sections, owners database, reporting, storage hub
+> (templates→PDF via @react-pdf, floorplans, videos), and bulk PDF send. Each
+> was verified locally with `tsc --noEmit`, `eslint`, and `next build` (all
+> green) and the PDF renderer was runtime-checked to emit a valid `%PDF` buffer.
+> Migrations are written but applied at deploy by `prisma migrate deploy`.
+> **Track A (go-live hardening) is still outstanding** — credentials, auth
+> restore, S3, clean seed, monitoring (see below + `docs/HANDOVER-PLAN.html`).
+
 Engineering build plan that continues the existing chunk roadmap (Chunks 1–15
 are complete; see `AGENTS.md`). Two tracks run in parallel:
 
