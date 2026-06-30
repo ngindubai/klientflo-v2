@@ -19,7 +19,7 @@ export async function ingestInbound(agentId: string, msg: InboundMessage) {
     if (existing) return existing.id;
   }
 
-  const client = await prisma.client.findFirst({
+  const client = await prisma.contact.findFirst({
     where: { agentId, phone: msg.from },
     select: { id: true },
   });

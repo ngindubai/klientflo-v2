@@ -1,12 +1,21 @@
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
+import type { ContactCategory } from "@/lib/constants";
 
-/** All clients for the current agent, with a derived max-urgency from their conversations. */
-export async function getClients(query?: string) {
+/**
+ * Contacts for the current agent, with a derived max-urgency from their
+ * conversations. Defaults to the `client` category so the Clients section shows
+ * only clients; the Agents / Investors sections reuse this with their category.
+ */
+export async function getClients(
+  query?: string,
+  category: ContactCategory = "client",
+) {
   const agent = await getCurrentAgent();
-  const clients = await prisma.client.findMany({
+  const clients = await prisma.contact.findMany({
     where: {
       agentId: agent.id,
+      category,
       ...(query
         ? {
             OR: [
@@ -31,7 +40,7 @@ export async function getClients(query?: string) {
 /** A single client with everything linked to it. */
 export async function getClient(id: string) {
   const agent = await getCurrentAgent();
-  return prisma.client.findFirst({
+  return prisma.contact.findFirst({
     where: { id, agentId: agent.id },
     include: {
       conversations: {

@@ -29,7 +29,7 @@ export async function getDocument(id: string) {
 export async function getDocumentFormOptions() {
   const agent = await getCurrentAgent();
   const [clients, properties, deals] = await Promise.all([
-    prisma.client.findMany({
+    prisma.contact.findMany({
       where: { agentId: agent.id },
       select: { id: true, name: true },
       orderBy: { name: "asc" },

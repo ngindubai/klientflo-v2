@@ -123,7 +123,7 @@ function reqFromClient(c: MatchInput): MatchInput {
 export async function getMatchingProperties(clientId: string, limit = 5) {
   const agent = await getCurrentAgent();
   const [client, properties] = await Promise.all([
-    prisma.client.findFirst({ where: { id: clientId, agentId: agent.id } }),
+    prisma.contact.findFirst({ where: { id: clientId, agentId: agent.id } }),
     prisma.property.findMany({ where: { agentId: agent.id, status: "active" } }),
   ]);
   if (!client) return [];
@@ -141,7 +141,7 @@ export async function getMatchingClients(propertyId: string, limit = 5) {
   const agent = await getCurrentAgent();
   const [property, clients] = await Promise.all([
     prisma.property.findFirst({ where: { id: propertyId, agentId: agent.id } }),
-    prisma.client.findMany({ where: { agentId: agent.id } }),
+    prisma.contact.findMany({ where: { agentId: agent.id } }),
   ]);
   if (!property) return [];
 

@@ -64,6 +64,37 @@ export type ClientType = (typeof CLIENT_TYPES)[number];
 export const PAYMENT_METHODS = ["mortgage", "cash"] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
+// --- Contact tagging -----------------------------------------------------
+// WhatsApp contacts are tagged into one of these categories. "agent" means an
+// external broker (not the internal Agent/owner). Drives the inbox tag filter
+// and the Agents / Investors sections.
+
+export const CONTACT_CATEGORIES = [
+  "client",
+  "agent",
+  "investor",
+  "spam",
+  "personal",
+] as const;
+export type ContactCategory = (typeof CONTACT_CATEGORIES)[number];
+
+export const CONTACT_CATEGORY_LABELS: Record<ContactCategory, string> = {
+  client: "Client",
+  agent: "Agent",
+  investor: "Investor",
+  spam: "Spam",
+  personal: "Personal",
+};
+
+/** Tailwind chip classes per category (background + text + border). */
+export const CONTACT_CATEGORY_CHIP: Record<ContactCategory, string> = {
+  client: "bg-primary-muted text-primary border-primary/30",
+  agent: "bg-amber-500/15 text-amber-600 border-amber-500/30",
+  investor: "bg-violet-500/15 text-violet-600 border-violet-500/30",
+  spam: "bg-red-500/15 text-red-600 border-red-500/30",
+  personal: "bg-surface-muted text-foreground-muted border-border",
+};
+
 // --- Pipelines -----------------------------------------------------------
 
 export const SALES_PIPELINE_STAGES = [

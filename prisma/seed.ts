@@ -63,7 +63,7 @@ async function main() {
     })) ?? prisma.property.create({ data: { agentId, ...data } as never });
 
   const ensureClient = (data: { phone: string } & Obj) =>
-    prisma.client.upsert({
+    prisma.contact.upsert({
       where: { agentId_phone: { agentId, phone: data.phone } },
       update: {},
       create: { agentId, ...data } as never,

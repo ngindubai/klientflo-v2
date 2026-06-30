@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
 
-export type InboxFilters = { minUrgency?: number; category?: string };
+export type InboxFilters = {
+  minUrgency?: number;
+  category?: string;
+  tag?: string;
+};
 
 export async function getConversations(filters: InboxFilters = {}) {
   const agent = await getCurrentAgent();
@@ -12,10 +16,15 @@ export async function getConversations(filters: InboxFilters = {}) {
       ...(filters.category
         ? { classification: filters.category as never }
         : {}),
+      // Tag (contact category) axis. Spam is hidden from the default inbox
+      // unless the user explicitly filters to it.
+      ...(filters.tag
+        ? { client: { category: filters.tag as never } }
+        : { NOT: { client: { category: "spam" } } }),
     },
     orderBy: [{ lastMessageAt: "desc" }, { updatedAt: "desc" }],
     include: {
-      client: { select: { id: true, name: true } },
+      client: { select: { id: true, name: true, category: true } },
       messages: { orderBy: { createdAt: "desc" }, take: 1 },
     },
   });

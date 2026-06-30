@@ -1,7 +1,12 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { CONVERSATION_CLASSIFICATIONS, humanizeEnum } from "@/lib/constants";
+import {
+  CONVERSATION_CLASSIFICATIONS,
+  CONTACT_CATEGORIES,
+  CONTACT_CATEGORY_LABELS,
+  humanizeEnum,
+} from "@/lib/constants";
 
 const selectClass =
   "rounded-lg border border-border bg-surface px-2 py-1.5 text-xs outline-none focus:border-primary";
@@ -11,6 +16,7 @@ export function InboxFilters() {
   const params = useSearchParams();
   const priority = params.get("priority") ?? "";
   const category = params.get("category") ?? "";
+  const tag = params.get("tag") ?? "";
 
   function update(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -33,6 +39,18 @@ export function InboxFilters() {
       </select>
       <select
         className={selectClass}
+        value={tag}
+        onChange={(e) => update("tag", e.target.value)}
+      >
+        <option value="">All tags</option>
+        {CONTACT_CATEGORIES.map((c) => (
+          <option key={c} value={c}>
+            {CONTACT_CATEGORY_LABELS[c]}
+          </option>
+        ))}
+      </select>
+      <select
+        className={selectClass}
         value={category}
         onChange={(e) => update("category", e.target.value)}
       >
@@ -43,7 +61,7 @@ export function InboxFilters() {
           </option>
         ))}
       </select>
-      {(priority || category) && (
+      {(priority || category || tag) && (
         <button
           onClick={() => router.push("/inbox")}
           className="text-xs font-medium text-primary hover:underline"

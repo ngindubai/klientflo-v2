@@ -5,8 +5,9 @@ import { VoiceReviewButton } from "@/components/inbox/voice-review-button";
 import { TranscribeButton } from "@/components/inbox/transcribe-button";
 import { DraftApprovalButtons } from "@/components/inbox/draft-approval-buttons";
 import { ReplyComposer } from "@/components/inbox/reply-composer";
+import { TagSelector } from "@/components/inbox/tag-selector";
 import { formatTime } from "@/lib/utils";
-import { humanizeEnum } from "@/lib/constants";
+import { humanizeEnum, type ContactCategory } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 type Message = {
@@ -28,7 +29,7 @@ type Conversation = {
   classification: string | null;
   urgency: number;
   summary: string | null;
-  client: { id: string; name: string } | null;
+  client: { id: string; name: string; category: ContactCategory } | null;
   messages: Message[];
 };
 
@@ -63,14 +64,20 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
             </p>
           </div>
         </div>
-        {conversation.client && (
-          <Link
-            href={`/clients/${conversation.client.id}`}
-            className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-surface-muted"
-          >
-            View client
-          </Link>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          <TagSelector
+            conversationId={conversation.id}
+            category={conversation.client?.category ?? null}
+          />
+          {conversation.client && (
+            <Link
+              href={`/clients/${conversation.client.id}`}
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-surface-muted"
+            >
+              View client
+            </Link>
+          )}
+        </div>
       </div>
 
       {conversation.summary && (

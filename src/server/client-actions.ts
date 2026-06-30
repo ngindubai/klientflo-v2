@@ -65,7 +65,7 @@ export async function createClient(input: ClientInput) {
 
   let id: string;
   try {
-    const client = await prisma.client.create({
+    const client = await prisma.contact.create({
       data: { agentId: agent.id, ...toData(input) },
     });
     id = client.id;
@@ -85,12 +85,12 @@ export async function createClient(input: ClientInput) {
 
 export async function updateClient(id: string, input: ClientInput) {
   const agent = await getCurrentAgent();
-  const existing = await prisma.client.findFirst({
+  const existing = await prisma.contact.findFirst({
     where: { id, agentId: agent.id },
   });
   if (!existing) throw new Error("Client not found.");
 
-  await prisma.client.update({ where: { id }, data: toData(input) });
+  await prisma.contact.update({ where: { id }, data: toData(input) });
   revalidatePath("/clients");
   revalidatePath(`/clients/${id}`);
   redirect(`/clients/${id}`);

@@ -23,7 +23,7 @@ export async function populateClientFromConversations(
   clientId: string,
   agentId: string,
 ) {
-  const client = await prisma.client.findFirst({
+  const client = await prisma.contact.findFirst({
     where: { id: clientId, agentId },
     include: {
       conversations: {
@@ -65,7 +65,7 @@ export async function populateClientFromConversations(
     suggestedNextAction ??= analysis.suggestedNextAction;
   }
 
-  return prisma.client.update({
+  return prisma.contact.update({
     where: { id: clientId },
     data: {
       clientType: client.clientType ?? merged.clientType,

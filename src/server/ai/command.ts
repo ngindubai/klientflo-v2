@@ -136,7 +136,7 @@ async function searchClients(
   const area = str(input.area);
   const clientType = str(input.clientType) as ClientType | undefined;
 
-  const clients = await prisma.client.findMany({
+  const clients = await prisma.contact.findMany({
     where: {
       agentId,
       ...(clientType ? { clientType } : {}),

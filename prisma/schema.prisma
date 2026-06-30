@@ -23,6 +23,17 @@ enum ClientType {
   landlord
 }
 
+// WhatsApp contact tagging (Chunk 16). "agent" here means an external broker —
+// distinct from the internal Agent tenant model. Stored on Contact so the tag
+// follows the person across the app and powers the Agents/Investors sections.
+enum ContactCategory {
+  client
+  agent
+  investor
+  spam
+  personal
+}
+
 enum PaymentMethod {
   mortgage
   cash
@@ -121,7 +132,7 @@ model Agent {
   updatedAt DateTime @updatedAt
 
   settings         Settings?
-  clients          Client[]
+  clients          Contact[]
   conversations    Conversation[]
   messages         Message[]
   properties       Property[]
@@ -148,12 +159,20 @@ model ScrapeJob {
   @@index([agentId, startedAt])
 }
 
-// --- Clients / leads -----------------------------------------------------
+// --- Contacts (clients / agents / investors / spam / personal) -----------
+// Unified contact record. category drives the per-category sections; the
+// lead/requirement fields below are only meaningful for category=client and
+// simply stay null for the others. Table kept as "Client" (@@map) so the
+// rename needs no destructive data migration.
 
-model Client {
-  id          String         @id @default(cuid())
+model Contact {
+  id          String          @id @default(cuid())
   agentId     String
-  agent       Agent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agent       Agent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  category    ContactCategory @default(client)
+  // AI-suggested category awaiting agent confirmation (Chunk 17); never
+  // overwrites a human-set `category`.
+  categorySuggested ContactCategory?
   name        String
   phone       String
   email       String?
@@ -182,6 +201,8 @@ model Client {
 
   @@unique([agentId, phone])
   @@index([agentId])
+  @@index([agentId, category])
+  @@map("Client")
 }
 
 // --- Conversations & messages -------------------------------------------
@@ -191,7 +212,7 @@ model Conversation {
   agentId        String
   agent          Agent                       @relation(fields: [agentId], references: [id], onDelete: Cascade)
   clientId       String?
-  client         Client?                     @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  client         Contact?                    @relation(fields: [clientId], references: [id], onDelete: SetNull)
   // WhatsApp counterpart phone (wa_id)
   contactPhone   String
   contactName    String?
@@ -283,7 +304,7 @@ model Event {
   location   String?
   notes      String?
   clientId   String?
-  client     Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  client     Contact?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
   propertyId String?
   property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   createdAt  DateTime  @default(now())
@@ -304,7 +325,7 @@ model Document {
   fileUrl    String?
   expiresAt  DateTime?
   clientId   String?
-  client     Client?          @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  client     Contact?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
   dealId     String?
   deal       Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
   propertyId String?
@@ -325,7 +346,7 @@ model Deal {
   // Validated against SALES_/RENTAL_PIPELINE_STAGES in constants.ts
   stage      String
   clientId   String?
-  client     Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  client     Contact?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
   propertyId String?
   property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   amount     Int?
@@ -350,7 +371,7 @@ model SuggestedAction {
   reason         String?
   status         SuggestedActionStatus @default(pending)
   clientId       String?
-  client         Client?               @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  client         Contact?              @relation(fields: [clientId], references: [id], onDelete: SetNull)
   conversationId String?
   conversation   Conversation?         @relation(fields: [conversationId], references: [id], onDelete: SetNull)
   createdAt      DateTime              @default(now())

@@ -13,12 +13,21 @@ export const dynamic = "force-dynamic";
 export default async function InboxPage({
   searchParams,
 }: {
-  searchParams: Promise<{ c?: string; priority?: string; category?: string }>;
+  searchParams: Promise<{
+    c?: string;
+    priority?: string;
+    category?: string;
+    tag?: string;
+  }>;
 }) {
-  const { c, priority, category } = await searchParams;
+  const { c, priority, category, tag } = await searchParams;
   const minUrgency = priority ? Number(priority) : undefined;
   const [conversations, active] = await Promise.all([
-    getConversations({ minUrgency, category: category || undefined }),
+    getConversations({
+      minUrgency,
+      category: category || undefined,
+      tag: tag || undefined,
+    }),
     c ? getConversation(c) : Promise.resolve(null),
   ]);
 

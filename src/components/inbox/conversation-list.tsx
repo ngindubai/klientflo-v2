@@ -2,6 +2,11 @@ import Link from "next/link";
 import { UrgencyBadge } from "@/components/dashboard/urgency-badge";
 import { formatRelativeTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import {
+  CONTACT_CATEGORY_CHIP,
+  CONTACT_CATEGORY_LABELS,
+  type ContactCategory,
+} from "@/lib/constants";
 
 type ConversationRow = {
   id: string;
@@ -10,7 +15,7 @@ type ConversationRow = {
   urgency: number;
   awaitingReply: boolean;
   lastMessageAt: Date | null;
-  client: { name: string } | null;
+  client: { name: string; category: ContactCategory } | null;
   messages: { body: string | null; transcription: string | null; type: string }[];
 };
 
@@ -59,7 +64,19 @@ export function ConversationList({
                 <p className="line-clamp-1 text-xs text-foreground-muted">
                   {preview(c.messages[0])}
                 </p>
-                {c.urgency >= 4 && <UrgencyBadge level={c.urgency} />}
+                <span className="flex shrink-0 items-center gap-1">
+                  {c.client && (
+                    <span
+                      className={cn(
+                        "rounded-full border px-1.5 py-0.5 text-[10px] font-medium",
+                        CONTACT_CATEGORY_CHIP[c.client.category],
+                      )}
+                    >
+                      {CONTACT_CATEGORY_LABELS[c.client.category]}
+                    </span>
+                  )}
+                  {c.urgency >= 4 && <UrgencyBadge level={c.urgency} />}
+                </span>
               </div>
             </Link>
           </li>

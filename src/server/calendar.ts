@@ -22,7 +22,7 @@ export async function getEvent(id: string) {
 export async function getEventFormOptions() {
   const agent = await getCurrentAgent();
   const [clients, properties] = await Promise.all([
-    prisma.client.findMany({
+    prisma.contact.findMany({
       where: { agentId: agent.id },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
