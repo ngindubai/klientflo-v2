@@ -1,10 +1,16 @@
 import { promises as fs } from "fs";
 import path from "path";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 
-// A pluggable blob store. The local adapter (below) writes to a gitignored
-// `.uploads/` directory and works with no configuration. An S3 adapter
-// implementing the same interface slots in when AWS creds are present
-// (S3_BUCKET / AWS_*), using @aws-sdk/client-s3 + presigned URLs.
+// A pluggable blob store. The local adapter writes to a gitignored `.uploads/`
+// directory and works with no configuration; the S3 adapter slots in when AWS
+// creds are present (S3_BUCKET / AWS_*). Files are proxied through the app's
+// /api/files/[id] and /api/media/[id] routes, so no presigned URLs are needed.
 export interface StorageAdapter {
   put(key: string, data: Buffer, contentType: string): Promise<void>;
   read(key: string): Promise<{ data: Buffer; contentType: string } | null>;
@@ -53,12 +59,57 @@ export function isS3Configured() {
   return Boolean(process.env.S3_BUCKET && process.env.AWS_ACCESS_KEY_ID);
 }
 
+// S3-backed store. Keys are prefixed under `uploads/` in the bucket. Objects
+// stay private — reads are proxied through the app, not served from a public
+// bucket URL.
+class S3Storage implements StorageAdapter {
+  private client: S3Client;
+  private bucket: string;
+  private prefix = "uploads/";
+
+  constructor() {
+    this.bucket = process.env.S3_BUCKET as string;
+    this.client = new S3Client({
+      region: process.env.AWS_REGION ?? "us-east-1",
+    });
+  }
+  private k(key: string) {
+    return this.prefix + key;
+  }
+  async put(key: string, data: Buffer, contentType: string) {
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: this.k(key),
+        Body: data,
+        ContentType: contentType,
+      }),
+    );
+  }
+  async read(key: string) {
+    try {
+      const res = await this.client.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: this.k(key) }),
+      );
+      if (!res.Body) return null;
+      const data = Buffer.from(await res.Body.transformToByteArray());
+      return { data, contentType: res.ContentType ?? "application/octet-stream" };
+    } catch {
+      return null;
+    }
+  }
+  async delete(key: string) {
+    await this.client.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: this.k(key) }),
+    );
+  }
+}
+
 let storage: StorageAdapter | null = null;
 
 export function getStorage(): StorageAdapter {
   if (!storage) {
-    // When isS3Configured(), construct an S3Storage here instead.
-    storage = new LocalStorage();
+    storage = isS3Configured() ? new S3Storage() : new LocalStorage();
   }
   return storage;
 }
