@@ -32,6 +32,10 @@ export async function setConversationTag(
       where: { id: conversation.clientId },
       data: { category, categorySuggested: null },
     });
+    await prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { categorySuggested: null },
+    });
   } else {
     // Create (or reuse, by phone) a Contact and link it to the conversation.
     const contact = await prisma.contact.upsert({
@@ -48,10 +52,25 @@ export async function setConversationTag(
     });
     await prisma.conversation.update({
       where: { id: conversation.id },
-      data: { clientId: contact.id },
+      data: { clientId: contact.id, categorySuggested: null },
     });
   }
 
   revalidatePath("/inbox");
   revalidatePath("/clients");
+}
+
+/** Dismiss the AI tag suggestion on a conversation without applying it. */
+export async function dismissTagSuggestion(conversationId: string) {
+  const agent = await getCurrentAgent();
+  const conversation = await prisma.conversation.findFirst({
+    where: { id: conversationId, agentId: agent.id },
+    select: { id: true },
+  });
+  if (!conversation) throw new Error("Conversation not found.");
+  await prisma.conversation.update({
+    where: { id: conversation.id },
+    data: { categorySuggested: null },
+  });
+  revalidatePath("/inbox");
 }

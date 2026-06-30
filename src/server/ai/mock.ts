@@ -6,6 +6,7 @@ import type {
 import type {
   ClientType,
   ConversationClassification,
+  ContactCategory,
   PaymentMethod,
 } from "@/lib/constants";
 
@@ -100,11 +101,34 @@ function classify(text: string): {
   return { classification: "new_enquiry", urgency: 3 };
 }
 
+/** Heuristic contact-category guess (the AI does this far better). */
+function categorize(
+  text: string,
+  classification: ConversationClassification,
+): ContactCategory {
+  if (!text.trim()) return "client";
+  if (
+    classification === "spam" ||
+    /\b(unsubscribe|lottery|crypto|giveaway|loan offer|click here|congratulations you)\b/.test(
+      text,
+    )
+  )
+    return "spam";
+  if (/\b(co-?broke|co-?broking|fellow agent|i'?m an agent|our agency|my agency|broker to broker|share (?:the )?listing|commission split)\b/.test(text))
+    return "agent";
+  if (/\b(roi|yield|rental return|investment|investor|portfolio|capital appreciation|off-?plan|cap rate)\b/.test(text))
+    return "investor";
+  if (/\b(happy birthday|how are you|dinner|family|see you (?:later|tonight)|lunch)\b/.test(text))
+    return "personal";
+  return "client";
+}
+
 export function mockAnalyzeConversation(
   messages: AnalysisMessage[],
 ): ConversationAnalysis {
   const text = inboundText(messages);
   const { classification, urgency } = classify(text);
+  const contactCategory = categorize(text, classification);
   const requirements = extractRequirements(text);
 
   const parts: string[] = [];
@@ -130,5 +154,12 @@ export function mockAnalyzeConversation(
           ? "Progress the deal and confirm next steps."
           : "Send matching properties and qualify the lead.";
 
-  return { classification, urgency, summary, requirements, suggestedNextAction };
+  return {
+    classification,
+    urgency,
+    summary,
+    contactCategory,
+    requirements,
+    suggestedNextAction,
+  };
 }

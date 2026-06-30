@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   CONVERSATION_CLASSIFICATIONS,
+  CONTACT_CATEGORIES,
   CLIENT_TYPES,
   PAYMENT_METHODS,
 } from "@/lib/constants";
@@ -22,6 +23,9 @@ export const ConversationAnalysisSchema = z.object({
   classification: z.enum(CONVERSATION_CLASSIFICATIONS),
   urgency: z.number().int().min(1).max(5),
   summary: z.string(),
+  // Who this contact is, for tagging: a client (buyer/tenant/seller/landlord),
+  // an external agent/broker, an investor, spam, or a personal contact.
+  contactCategory: z.enum(CONTACT_CATEGORIES),
   requirements: RequirementsSchema,
   suggestedNextAction: z.string(),
 });

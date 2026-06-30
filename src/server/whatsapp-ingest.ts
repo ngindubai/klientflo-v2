@@ -72,6 +72,9 @@ export async function ingestInbound(agentId: string, msg: InboundMessage) {
         classification: analysis.classification,
         urgency: analysis.urgency,
         summary: analysis.summary,
+        // Store the contact-tag suggestion; the agent confirms or dismisses it
+        // in the inbox. Never auto-applies to the Contact.
+        categorySuggested: analysis.contactCategory,
       },
     });
   }

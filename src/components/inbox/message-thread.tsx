@@ -6,6 +6,7 @@ import { TranscribeButton } from "@/components/inbox/transcribe-button";
 import { DraftApprovalButtons } from "@/components/inbox/draft-approval-buttons";
 import { ReplyComposer } from "@/components/inbox/reply-composer";
 import { TagSelector } from "@/components/inbox/tag-selector";
+import { TagSuggestion } from "@/components/inbox/tag-suggestion";
 import { formatTime } from "@/lib/utils";
 import { humanizeEnum, type ContactCategory } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ type Conversation = {
   classification: string | null;
   urgency: number;
   summary: string | null;
+  categorySuggested: ContactCategory | null;
   client: { id: string; name: string; category: ContactCategory } | null;
   messages: Message[];
 };
@@ -36,6 +38,12 @@ type Conversation = {
 export function MessageThread({ conversation }: { conversation: Conversation }) {
   const name =
     conversation.client?.name ?? conversation.contactName ?? conversation.contactPhone;
+
+  // Show the AI tag suggestion only when it differs from the current tag.
+  const currentCategory = conversation.client?.category ?? null;
+  const showSuggestion =
+    conversation.categorySuggested != null &&
+    conversation.categorySuggested !== currentCategory;
 
   return (
     <div className="flex h-full flex-col">
@@ -79,6 +87,13 @@ export function MessageThread({ conversation }: { conversation: Conversation }) 
           )}
         </div>
       </div>
+
+      {showSuggestion && conversation.categorySuggested && (
+        <TagSuggestion
+          conversationId={conversation.id}
+          suggested={conversation.categorySuggested}
+        />
+      )}
 
       {conversation.summary && (
         <p className="border-b border-border bg-primary-muted/40 px-3 py-2 text-xs text-foreground-muted">

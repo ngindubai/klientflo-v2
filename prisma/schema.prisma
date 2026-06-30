@@ -219,6 +219,9 @@ model Conversation {
   classification ConversationClassification?
   urgency        Int                         @default(1) // 1-5
   summary        String?
+  // AI-suggested contact tag awaiting agent confirmation (Chunk 17). Cleared
+  // when the agent accepts (tag applied to the Contact) or dismisses it.
+  categorySuggested ContactCategory?
   // True when a reply is owed to the contact.
   awaitingReply  Boolean                     @default(false)
   lastMessageAt  DateTime?

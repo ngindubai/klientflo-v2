@@ -13,6 +13,7 @@ Analyse a WhatsApp conversation from the agent's point of view and return struct
 
 - classification: the single best label for the conversation.
 - urgency: 1 (no rush) to 5 (immediate action required). Score higher for viewing requests, ready/cash buyers and tenants, active negotiations, and contract/payment stages.
+- contactCategory: who the contact is. "client" = a buyer/tenant/seller/landlord enquiring about property; "agent" = a fellow real-estate agent or broker (mentions their agency, co-broking, sharing listings between agents); "investor" = someone focused on ROI/yield/portfolio/off-plan investment rather than living in the property; "spam" = unsolicited marketing, scams, wrong numbers; "personal" = friends/family/non-business. Default to "client" when it reads like a property enquiry.
 - summary: one or two sentences capturing what the contact wants, written for the agent.
 - requirements: extract the buyer/tenant requirements stated or implied. Use null for anything not mentioned. Budgets are in AED as whole numbers (e.g. "2 million" -> 2000000, "120k" -> 120000). Recognise Dubai areas (Dubai Marina, Downtown, Palm Jumeirah, JVC, Business Bay, JLT, etc.).
 - suggestedNextAction: the most useful next step the agent should take.
