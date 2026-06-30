@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { usingDefaultPassword } from "@/server/auth";
 import { LoginForm } from "@/components/auth/login-form";
@@ -26,6 +27,15 @@ export default async function LoginPage() {
           Sign in to your AI real estate assistant.
         </p>
         <LoginForm defaultEmail={agent?.email ?? ""} hintPassword={hint} />
+
+        <p className="mt-8 flex justify-center gap-4 text-xs text-foreground-muted">
+          <Link href="/privacy" className="hover:text-foreground">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="hover:text-foreground">
+            Terms of Service
+          </Link>
+        </p>
       </div>
     </main>
   );
