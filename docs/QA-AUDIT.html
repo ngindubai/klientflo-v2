@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Klientflo — Pre-Launch QA &amp; Security Audit</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --panel:#ffffff; --ink:#1a1d24; --muted:#5b6472; --line:#e4e7ec;
+    --brand:#4f46e5; --brand-soft:#eef2ff;
+    --crit:#dc2626; --crit-bg:#fef2f2; --crit-line:#fecaca;
+    --high:#ea580c; --high-bg:#fff7ed; --high-line:#fed7aa;
+    --med:#ca8a04; --med-bg:#fefce8; --med-line:#fde68a;
+    --low:#64748b; --low-bg:#f1f5f9; --low-line:#cbd5e1;
+    --ok:#16a34a; --ok-bg:#f0fdf4;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px 100px}
+  header.hero{padding:48px 0 26px;border-bottom:1px solid var(--line);margin-bottom:26px}
+  .kicker{color:var(--brand);font-weight:700;letter-spacing:.13em;text-transform:uppercase;font-size:12px}
+  h1{font-size:32px;line-height:1.15;margin:10px 0 8px;letter-spacing:-.02em}
+  h2{font-size:23px;margin:46px 0 8px;letter-spacing:-.01em;scroll-margin-top:16px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+  h3{font-size:17px;margin:26px 0 8px}
+  h4{font-size:14px;margin:18px 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  p{margin:8px 0}
+  .sub{color:var(--muted);max-width:74ch}
+  .meta{color:var(--muted);font-size:13px;margin-top:14px;line-height:1.7}
+  .grid{display:grid;gap:14px}
+  @media(min-width:760px){.cols-2{grid-template-columns:1fr 1fr}.cols-3{grid-template-columns:1fr 1fr 1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;margin:8px 0}
+  .toc ol{margin:8px 0 0;padding-left:22px;columns:2;column-gap:34px}
+  .toc li{margin:5px 0;break-inside:avoid}
+  .badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 9px;border-radius:999px;border:1px solid;vertical-align:middle;white-space:nowrap}
+  .b-crit{background:var(--crit-bg);color:var(--crit);border-color:var(--crit-line)}
+  .b-high{background:var(--high-bg);color:var(--high);border-color:var(--high-line)}
+  .b-med{background:var(--med-bg);color:var(--med);border-color:var(--med-line)}
+  .b-low{background:var(--low-bg);color:var(--low);border-color:var(--low-line)}
+  .b-ok{background:var(--ok-bg);color:var(--ok);border-color:#bbf7d0}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 4px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#fafbfc;color:var(--muted);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+  tr:last-child td{border-bottom:0}
+  td code,p code,li code{background:#f3f4f6;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:#b1207a}
+  .issue{border:1px solid var(--line);border-left-width:5px;border-radius:10px;background:var(--panel);padding:16px 18px;margin:14px 0}
+  .issue.crit{border-left-color:var(--crit)}
+  .issue.high{border-left-color:var(--high)}
+  .issue.med{border-left-color:var(--med)}
+  .issue.low{border-left-color:var(--low)}
+  .issue h3{margin:0 0 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .issue .num{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;font-weight:700}
+  .issue dl{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin:10px 0 0;font-size:14px}
+  .issue dt{color:var(--muted);font-weight:600}
+  .issue dd{margin:0}
+  .fix{background:var(--brand-soft);border-radius:8px;padding:8px 12px;margin-top:6px}
+  ul.check{list-style:none;padding:0;margin:10px 0}
+  ul.check li{position:relative;padding:6px 0 6px 26px;border-bottom:1px dashed var(--line)}
+  ul.check li:last-child{border-bottom:0}
+  ul.check li::before{content:"";position:absolute;left:3px;top:12px;width:13px;height:13px;border:2px solid var(--brand);border-radius:4px}
+  ul.tight{margin:8px 0;padding-left:20px}
+  ul.tight li{margin:4px 0}
+  .callout{border-left:4px solid var(--med);background:var(--med-bg);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .callout.crit{border-color:var(--crit);background:var(--crit-bg)}
+  .callout.info{border-color:var(--brand);background:var(--brand-soft)}
+  .callout.ok{border-color:var(--ok);background:var(--ok-bg)}
+  .callout h4{margin:0 0 4px;color:inherit}
+  .score-table td:nth-child(2){font-weight:800;text-align:center;white-space:nowrap}
+  .pill{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:#fafbfc}
+  .rec-grid{display:grid;gap:14px}
+  @media(min-width:760px){.rec-grid{grid-template-columns:1fr 1fr}}
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  .back{font-size:12px;color:var(--muted)}
+  @media print{body{background:#fff}.toc{break-inside:avoid}.issue,table,.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="kicker">Pre-Launch Review · QA · UX · Accessibility · Security</div>
+    <h1>Klientflo — Pre-Launch QA &amp; Security Audit</h1>
+    <p class="sub">A demanding, code-grounded review of the app as if it were about to go live to real clients. Every finding below was verified against the source. Where a judgement needs a live run (Lighthouse, screen readers, real devices/browsers) it is marked as such.</p>
+    <div class="meta">
+      <strong>App:</strong> Klientflo — WhatsApp-first AI operating system for UAE real-estate agents.<br>
+      <strong>Users:</strong> UAE real-estate agents / brokers (single brokerage tenant; per-user login accounts).<br>
+      <strong>Roles:</strong> One <code>Agent</code> tenant + <code>User</code> accounts. <strong>The access gate is currently OPEN</strong> — the live link is public, no login required (a deliberate demo choice).<br>
+      <strong>Runtime:</strong> Render deploy; runs in <strong>mock mode</strong> (no Claude / WhatsApp / S3 credentials) unless configured. Demo seed data present.<br>
+      <strong>Stack:</strong> Next.js 16 · Prisma 7 / PostgreSQL · Tailwind v4.<br>
+      <strong>Method:</strong> Source-code audit (reviewer built the app). <strong>Not</strong> verified live: real performance metrics, cross-browser rendering, live screen-reader output.<br>
+      <strong>Prepared:</strong> 30 June 2026.
+    </div>
+  </header>
+
+  <div class="legend">
+    <span class="badge b-crit">Critical</span>
+    <span class="badge b-high">High</span>
+    <span class="badge b-med">Medium</span>
+    <span class="badge b-low">Low</span>
+    <span class="badge b-ok">Done / Good</span>
+  </div>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#a">A · Executive Summary</a></li>
+      <li><a href="#b">B · Critical Issues</a></li>
+      <li><a href="#c">C · UI/UX Review</a></li>
+      <li><a href="#d">D · QA Functional Testing</a></li>
+      <li><a href="#e">E · Accessibility Audit</a></li>
+      <li><a href="#f">F · Security, Privacy &amp; Abuse Prevention</a></li>
+      <li><a href="#g">G · Conversion &amp; User Journey</a></li>
+      <li><a href="#h">H · Content &amp; Microcopy</a></li>
+      <li><a href="#i">I · Responsive Design</a></li>
+      <li><a href="#j">J · Performance &amp; Perceived Speed</a></li>
+      <li><a href="#k">K · Security &amp; Trust Signals</a></li>
+      <li><a href="#l">L · Prioritized Action Plan</a></li>
+      <li><a href="#m">M · Final Scorecard</a></li>
+      <li><a href="#n">N · Final Recommendations</a></li>
+    </ol>
+  </div>
+
+  <!-- ============================== A ============================== -->
+  <h2 id="a">A · Executive Summary</h2>
+  <p>The app has <strong>strong engineering bones</strong>: a clean design system, consistent component patterns, hardened auth <em>internals</em> (scrypt hashing, expiring/secure sessions, login rate-limiting), 30 passing unit tests, paginated lists, a real PDF pipeline, an error boundary, a health check, and a solid responsive pass. As a <strong>demo</strong>, it presents well.</p>
+  <p>For a <strong>real client launch it is not ready</strong>, and the blockers are concentrated in security and trust:</p>
+  <div class="callout crit">
+    <h4>The single biggest issue</h4>
+    <p style="margin:0"><strong>The entire app is public.</strong> <code>src/proxy.ts</code> lets every request through, and <code>getCurrentAgent()</code> falls back to the <em>first</em> agent for anonymous visitors. So anyone with the URL can <strong>read and mutate all data</strong> — create/delete contacts, delete team users, clear the owners database, upload files, trigger bulk sends — acting as the demo agent. Everything else is secondary to this.</p>
+  </div>
+  <ul class="tight">
+    <li><strong>Broken demo assets.</strong> <code>public/seed/</code> does not exist, so every <code>/seed/*.jpg|.pdf|.ogg</code> reference (document previews, voice notes, brochures) <strong>404s</strong>. Leftover Next.js starter SVGs (<code>next.svg</code>, <code>vercel.svg</code>, …) remain in <code>public/</code>.</li>
+    <li><strong>Real security gaps independent of the gate:</strong> an <strong>open redirect</strong> (<code>/api/media/[id]</code> 302s to a user-controlled URL), <strong>no file-upload size/type limits</strong>, <strong>no CSV import cap</strong>, <strong>destructive actions with no confirmation</strong> (delete user, delete media), the <strong>default password printed on the login screen</strong>, and a <strong>dev "Simulate inbound" button exposed in production</strong>.</li>
+    <li><strong>No authorization model.</strong> Any logged-in user can delete other users; there are no roles (admin/staff). No password-reset or change-password flow exists.</li>
+  </ul>
+  <div class="grid cols-3" style="margin-top:14px">
+    <div class="card"><h4>Major strengths</h4><p class="sub" style="font-size:13.5px">Design consistency · auth crypto quality · unit-test coverage of pure logic · mobile responsiveness · graceful error/empty states · privacy/terms scaffolding.</p></div>
+    <div class="card"><h4>Major weaknesses</h4><p class="sub" style="font-size:13.5px">Public access · broken assets · missing input hardening · no RBAC · no account recovery.</p></div>
+    <div class="card"><h4>Overall UX</h4><p class="sub" style="font-size:13.5px">Competent and clean once inside, but undermined by broken images and an unmistakably "demo" feel (exposed password, simulate button, fake-but-real-looking PII).</p></div>
+  </div>
+
+  <!-- ============================== B ============================== -->
+  <h2 id="b">B · Critical Issues</h2>
+  <p class="sub">Each issue lists where it appears, why it matters, severity, the fix, and the expected impact after fixing.</p>
+
+  <div class="issue crit">
+    <h3><span class="num">1</span> App is fully public / no auth enforced <span class="badge b-crit">Critical</span></h3>
+    <dl>
+      <dt>Where</dt><dd><code>src/proxy.ts</code> (pass-through middleware) + <code>src/server/agent.ts</code> (<code>getCurrentAgent</code> first-agent fallback).</dd>
+      <dt>Why it matters</dt><dd>Anyone with the URL reads and writes all data as the demo agent. Complete loss of confidentiality and integrity for a real tenant.</dd>
+      <dt>Fix</dt><dd class="fix">Re-enable the gate: restore the redirect-to-<code>/login</code> in <code>proxy.ts</code>. In server actions, resolve the agent from the <strong>session only</strong> (no first-agent fallback for browser requests) and <code>throw</code>/redirect if absent. Keep the webhook/script path as an explicit, separate code path.</dd>
+      <dt>After fixing</dt><dd>Data is private; only authenticated users can act.</dd>
+    </dl>
+  </div>
+
+  <div class="issue high">
+    <h3><span class="num">2</span> Open redirect <span class="badge b-high">High</span></h3>
+    <dl>
+      <dt>Where</dt><dd><code>src/app/api/media/[id]/route.ts</code> → <code>NextResponse.redirect(asset.externalUrl)</code>.</dd>
+      <dt>Why it matters</dt><dd><code>externalUrl</code> is unvalidated user input (<code>addMediaLink</code> stores any string). An attacker creates a media "link", shares <code>/api/media/&lt;id&gt;</code>, and the victim is redirected anywhere — phishing/credential harvesting under your own domain.</dd>
+      <dt>Fix</dt><dd class="fix">Don't server-redirect to user URLs. Render external links client-side as plain anchors. If a redirect is required, allowlist <code>https:</code> plus known hosts (YouTube/Vimeo/Drive) and reject everything else.</dd>
+      <dt>After fixing</dt><dd>No open-redirect vector.</dd>
+    </dl>
+  </div>
+
+  <div class="issue high">
+    <h3><span class="num">3</span> Broken seed assets (404s) <span class="badge b-high">High</span></h3>
+    <dl>
+      <dt>Where</dt><dd><code>public/seed/</code> is missing; referenced throughout <code>prisma/seed.ts</code> (<code>/seed/*.jpg/.pdf/.ogg</code>).</dd>
+      <dt>Why it matters</dt><dd>Document previews, voice notes and brochures all 404. The product looks broken/unfinished to anyone evaluating it.</dd>
+      <dt>Fix</dt><dd class="fix">Either add real placeholder assets under <code>public/seed/</code>, or change the seed to omit file URLs and render a "no preview" state. Remove the leftover starter SVGs (<code>next.svg</code>, <code>vercel.svg</code>, <code>globe.svg</code>, <code>window.svg</code>, <code>file.svg</code>).</dd>
+      <dt>After fixing</dt><dd>Clean, professional demo with working previews.</dd>
+    </dl>
+  </div>
+
+  <div class="issue high">
+    <h3><span class="num">4</span> No file-upload limits <span class="badge b-high">High</span></h3>
+    <dl>
+      <dt>Where</dt><dd><code>src/server/media-actions.ts</code>, <code>src/server/document-actions.ts</code> — only check <code>instanceof File &amp;&amp; size !== 0</code>.</dd>
+      <dt>Why it matters</dt><dd>Any (anonymous) user can upload arbitrarily large or arbitrary-type files → storage abuse, denial of service, hosting cost.</dd>
+      <dt>Fix</dt><dd class="fix">Enforce a max size (e.g. 10&nbsp;MB documents / 50&nbsp;MB video) and a content-type allowlist server-side <strong>before</strong> writing to storage; reject with a clear error otherwise.</dd>
+      <dt>After fixing</dt><dd>Uploads are bounded and type-safe.</dd>
+    </dl>
+  </div>
+
+  <div class="issue high">
+    <h3><span class="num">5</span> Default password shown on login <span class="badge b-high">High</span></h3>
+    <dl>
+      <dt>Where</dt><dd><code>src/components/auth/login-form.tsx</code> — renders <code>Demo password: klientflo</code> when <code>APP_PASSWORD</code> is unset.</dd>
+      <dt>Why it matters</dt><dd>If deployed without <code>APP_PASSWORD</code>, the working password is printed publicly <strong>and</strong> it's the well-known default. Instant account takeover the moment the gate is enabled.</dd>
+      <dt>Fix</dt><dd class="fix">Never render the actual password. Remove the hint in production (gate it behind a <code>DEMO_MODE</code> flag, or drop it entirely). Require a non-default <code>APP_PASSWORD</code> / seeded user in production.</dd>
+      <dt>After fixing</dt><dd>No credential disclosure.</dd>
+    </dl>
+  </div>
+
+  <div class="issue med">
+    <h3><span class="num">6</span> Destructive actions without confirmation <span class="badge b-med">Medium</span></h3>
+    <dl>
+      <dt>Where</dt><dd><code>team-settings.tsx</code> (delete user) and <code>media-manager.tsx</code> (delete media) — plain <code>&lt;form action&gt;</code> submit, no prompt. (Template/owners deletes <em>do</em> confirm — inconsistent.)</dd>
+      <dt>Why it matters</dt><dd>One click permanently deletes a user or asset, with no undo and no prompt — easy accidental data loss and support tickets.</dd>
+      <dt>Fix</dt><dd class="fix">Add a confirmation step (a single consistent styled dialog, not native <code>confirm()</code> in some places and nothing in others) for all deletes. Ideally soft-delete users.</dd>
+      <dt>After fixing</dt><dd>Fewer accidental deletions; consistent behaviour.</dd>
+    </dl>
+  </div>
+
+  <div class="issue med">
+    <h3><span class="num">7</span> Unbounded CSV import <span class="badge b-med">Medium</span></h3>
+    <dl>
+      <dt>Where</dt><dd><code>src/server/owner-actions.ts</code> → <code>parseOwnerCsv</code> then <code>createMany</code>.</dd>
+      <dt>Why it matters</dt><dd>No row/byte cap; a huge CSV blocks the request and bulk-inserts unbounded rows.</dd>
+      <dt>Fix</dt><dd class="fix">Cap input bytes and rows (e.g. 5&nbsp;MB / 10k rows); chunk <code>createMany</code>; return a clear "file too large" message.</dd>
+      <dt>After fixing</dt><dd>Import is safe at scale.</dd>
+    </dl>
+  </div>
+
+  <div class="issue med">
+    <h3><span class="num">8</span> Webhook accepts unsigned payloads when app secret is unset <span class="badge b-med">Medium</span></h3>
+    <dl>
+      <dt>Where</dt><dd><code>src/server/whatsapp.ts</code> — <code>verifySignature</code> returns <code>true</code> if <code>WHATSAPP_APP_SECRET</code> is missing.</dd>
+      <dt>Why it matters</dt><dd>In a half-configured production (WhatsApp token set, app secret missing), anyone can POST fake inbound messages → fake conversations, AI spend, auto-replies.</dd>
+      <dt>Fix</dt><dd class="fix">Fail closed: if WhatsApp is configured (<code>isWhatsAppConfigured()</code>), require a valid signature regardless; only skip verification in an explicit demo mode.</dd>
+      <dt>After fixing</dt><dd>No forged inbound messages.</dd>
+    </dl>
+  </div>
+
+  <div class="issue low">
+    <h3><span class="num">9</span> "Simulate inbound" exposed in production <span class="badge b-low">Low / Med</span></h3>
+    <dl>
+      <dt>Where</dt><dd><code>src/app/(app)/inbox/page.tsx</code> → <code>SimulateInboundButton</code>.</dd>
+      <dt>Why it matters</dt><dd>A dev/demo affordance lets anyone inject fake messages in production.</dd>
+      <dt>Fix</dt><dd class="fix">Hide behind a <code>DEMO_MODE</code> / non-production flag.</dd>
+      <dt>After fixing</dt><dd>Cleaner production UI; no fake-data injection.</dd>
+    </dl>
+  </div>
+
+  <div class="issue med">
+    <h3><span class="num">10</span> No password reset / change-password <span class="badge b-med">Medium</span></h3>
+    <dl>
+      <dt>Where</dt><dd>No such flow exists anywhere.</dd>
+      <dt>Why it matters</dt><dd>Users can't recover or rotate credentials; admins must re-create accounts. Account-safety gap.</dd>
+      <dt>Fix</dt><dd class="fix">Add change-password (in Settings) and a token-based reset (email) before enabling the gate for real users.</dd>
+      <dt>After fixing</dt><dd>Self-service recovery; better account hygiene.</dd>
+    </dl>
+  </div>
+
+  <!-- ============================== C ============================== -->
+  <h2 id="c">C · UI/UX Review</h2>
+  <table>
+    <tr><th>Area</th><th>Assessment</th></tr>
+    <tr><td>Layout</td><td>Clean sidebar + sticky top bar with the AI command bar; good content max-widths; consistent card system. Solid.</td></tr>
+    <tr><td>Navigation</td><td><strong>13 sidebar items</strong> (Dashboard, Inbox, Clients, Agents, Investors, Properties, Owners, Pipeline, Reports, Calendar, Documents, Storage, Settings) — cognitively heavy. <strong>Group them</strong> (e.g. "Contacts" → Clients/Agents/Investors; "Library" → Properties/Owners/Storage/Documents) or add section dividers.</td></tr>
+    <tr><td>Visual hierarchy</td><td>Consistent <code>PageHeader</code> (h1 + description). Some sub-sections use <code>&lt;p class="font-semibold"&gt;</code> instead of real headings — hurts hierarchy &amp; a11y.</td></tr>
+    <tr><td>Spacing / typography</td><td>Consistent (Geist, Tailwind scale). Good.</td></tr>
+    <tr><td>Buttons / CTAs</td><td>Consistent primary/secondary styles; icon-only buttons mostly have <code>title</code>/<code>aria-label</code>.</td></tr>
+    <tr><td>Forms</td><td><strong>Minimal, server-side-only validation</strong> (no inline field errors; a thrown error shows as one banner). Several inputs are <strong>placeholder-only with no <code>&lt;label&gt;</code></strong> (Team add-user, Owner search/import, bulk-send search).</td></tr>
+    <tr><td>Modals</td><td>Mostly inline panels (template editor, bulk send) — good. Destructive confirmations use native <code>confirm()</code> in some places and <strong>nothing</strong> in others — inconsistent.</td></tr>
+    <tr><td>Tables / cards</td><td>Owners table clean with semantic <code>&lt;thead&gt;/&lt;th&gt;</code> + horizontal scroll. Contact/property cards consistent.</td></tr>
+    <tr><td>Empty states</td><td><span class="badge b-ok">Good</span> Present and friendly on every list.</td></tr>
+    <tr><td>Loading states</td><td><span class="badge b-ok">Good</span> Global <code>loading.tsx</code> skeleton — but most pages are <code>force-dynamic</code>, so first paint waits on the DB.</td></tr>
+    <tr><td>Error states</td><td><span class="badge b-ok">Good</span> App-level <code>error.tsx</code> + friendly <code>not-found.tsx</code>.</td></tr>
+    <tr><td>Mobile usability</td><td><span class="badge b-ok">Good</span> Off-canvas sidebar, scrollable kanban/calendar, wrapping inbox header.</td></tr>
+    <tr><td>Consistency</td><td>High overall; the weak spots are broken images and demo affordances breaking the "real product" illusion.</td></tr>
+  </table>
+
+  <!-- ============================== D ============================== -->
+  <h2 id="d">D · QA Functional Testing</h2>
+  <div class="callout info"><p style="margin:0">These are <strong>manual</strong> cases to run against a deployed instance with the <strong>gate ON</strong> and test credentials — neither of which the reviewer currently has. Automated coverage today: 30 unit tests on pure logic (CSV, merge fields, auth crypto, matching, reporting). There are <strong>no integration/e2e tests</strong>.</p></div>
+  <table>
+    <tr><th>ID</th><th>Area</th><th>Scenario</th><th>Steps</th><th>Expected</th><th>Pri</th></tr>
+    <tr><td>F-01</td><td>Auth</td><td>Valid login</td><td>Enter seeded email + password → submit</td><td>Redirect to <code>/dashboard</code>, session cookie set</td><td>High</td></tr>
+    <tr><td>F-02</td><td>Auth</td><td>Invalid password</td><td>Wrong password ×1</td><td>Generic "Invalid email or password" (no enumeration)</td><td>High</td></tr>
+    <tr><td>F-03</td><td>Auth</td><td>Rate limit</td><td>11 bad logins in 5 min</td><td>11th blocked with "too many attempts"</td><td>High</td></tr>
+    <tr><td>F-04</td><td>Auth</td><td>Session expiry</td><td>Tamper/expire cookie, load <code>/clients</code></td><td>Treated as logged out (gate on → <code>/login</code>)</td><td>High</td></tr>
+    <tr><td>F-05</td><td>Inbox</td><td>Tag a conversation</td><td>Open thread → set tag → reload</td><td>Tag persists; chip shows; spam hidden from default</td><td>High</td></tr>
+    <tr><td>F-06</td><td>Inbox</td><td>AI suggestion accept/dismiss</td><td>Inbound conv with suggestion → Accept</td><td>Tag applied, suggestion cleared</td><td>Med</td></tr>
+    <tr><td>F-07</td><td>Inbox</td><td>Pagination + filters</td><td>Apply priority+tag, go page 2</td><td>Filters preserved across pages</td><td>Med</td></tr>
+    <tr><td>F-08</td><td>Clients</td><td>Create/edit contact</td><td>New client → save → edit</td><td>Persists; unique phone enforced (P2002 → friendly msg)</td><td>High</td></tr>
+    <tr><td>F-09</td><td>Owners</td><td>CSV import (happy)</td><td>Upload valid CSV</td><td>Correct count; dedupe by phone; searchable</td><td>High</td></tr>
+    <tr><td>F-10</td><td>Owners</td><td>CSV import (bad)</td><td>Upload no-Name / empty CSV</td><td>Clear error, nothing imported</td><td>High</td></tr>
+    <tr><td>F-11</td><td>Storage</td><td>Template → PDF</td><td>Create template, pick property, Open PDF</td><td>Valid branded PDF with merged fields</td><td>High</td></tr>
+    <tr><td>F-12</td><td>Storage</td><td>Upload floorplan/video + link</td><td>Upload file; add link</td><td>File served via <code>/api/media</code>; link opens</td><td>Med</td></tr>
+    <tr><td>F-13</td><td>Bulk send</td><td>Send to multiple</td><td>Pick template+property+contacts → send</td><td>Per-recipient status; 24h-window flags (mock)</td><td>High</td></tr>
+    <tr><td>F-14</td><td>Pipeline</td><td>Drag deal stage</td><td>Drag card to new column</td><td>Stage persists; reverts on failure</td><td>Med</td></tr>
+    <tr><td>F-15</td><td>Calendar</td><td>Create/edit/delete event</td><td>Add → edit → delete</td><td>Reflects across month/week/day</td><td>Med</td></tr>
+    <tr><td>F-16</td><td>Reports</td><td>Range switch</td><td>7/30/90d</td><td>KPIs + median response recompute</td><td>Med</td></tr>
+    <tr><td>F-17</td><td>Settings</td><td>Add/remove team user</td><td>Add (min-8) → delete</td><td>Created (hashed); duplicate email rejected; delete works</td><td>High</td></tr>
+    <tr><td>N-01</td><td>Negative</td><td>Required fields</td><td>Submit client with empty name/phone</td><td>Blocked with message</td><td>High</td></tr>
+    <tr><td>N-02</td><td>Negative</td><td>Short password</td><td>Add user, 5-char password</td><td>"Password must be at least 8 characters"</td><td>High</td></tr>
+    <tr><td>N-03</td><td>Negative</td><td>Huge file upload</td><td>Upload &gt;100 MB</td><td><strong>Currently accepted (bug)</strong> → should be rejected</td><td>High</td></tr>
+    <tr><td>N-04</td><td>Negative</td><td>Wrong type / malicious filename</td><td>Upload <code>.exe</code> as a document</td><td><strong>Currently accepted (bug)</strong> → should be rejected</td><td>High</td></tr>
+    <tr><td>E-01</td><td>Edge</td><td>Duplicate submit</td><td>Double-click Send/Create</td><td>No duplicate records (debounce/disable)</td><td>Med</td></tr>
+    <tr><td>E-02</td><td>Edge</td><td>Conversation w/o contact</td><td>Tag an untagged conversation</td><td>Contact auto-created + linked</td><td>Med</td></tr>
+    <tr><td>E-03</td><td>Edge</td><td>Empty datasets</td><td>Fresh tenant</td><td>All sections show empty states, no crash</td><td>Med</td></tr>
+    <tr><td>P-01</td><td>Perms</td><td>Direct URL when logged out (gate on)</td><td>Hit <code>/settings</code> logged out</td><td>Redirect to <code>/login</code></td><td>High</td></tr>
+    <tr><td>P-02</td><td>Perms</td><td>Cross-tenant ID access</td><td>Request another agent's <code>/clients/[id]</code></td><td>404/forbidden (queries are agent-scoped — verify)</td><td>High</td></tr>
+    <tr><td>X-01</td><td>Cross-browser</td><td>Safari/Firefox/Edge</td><td>Run core flows</td><td>Parity — esp. Web Speech mic (Safari/Firefox differ); verify graceful fallback</td><td>Med</td></tr>
+    <tr><td>M-01</td><td>Mobile</td><td>Calendar month</td><td>Open at 360px</td><td>Horizontal scroll, readable</td><td>Med</td></tr>
+    <tr><td>M-02</td><td>Mobile</td><td>Inbox thread header</td><td>Long name + tag selector</td><td>Wraps, no overflow</td><td>Med</td></tr>
+  </table>
+
+  <!-- ============================== E ============================== -->
+  <h2 id="e">E · Accessibility Audit (WCAG-style)</h2>
+  <div class="callout ok"><p style="margin:0"><strong>Good already:</strong> global <code>:focus-visible</code> ring + <code>prefers-reduced-motion</code>; most icon buttons have <code>title</code>/<code>aria-label</code>; tables use semantic <code>&lt;thead&gt;/&lt;th&gt;</code>; client/property editors use real <code>&lt;label&gt;</code>s.</p></div>
+  <ul class="check">
+    <li><strong>Inputs without programmatic labels</strong> — Team add-user (<code>name/email/password</code>), Owner search + import file input, bulk-send search, inbox/owner filter selects rely on <code>placeholder</code> only. <em>Fix:</em> add <code>&lt;label htmlFor&gt;</code> (visually hidden if needed) or <code>aria-label</code> on each.</li>
+    <li><strong>Colour contrast (needs measurement)</strong> — <code>text-foreground-muted</code> on <code>surface</code>, and especially <code>amber-700</code> on <code>amber-500/10</code> (warning banners, 24h-window flag) are likely below 4.5:1. <em>Fix:</em> run axe/Lighthouse; darken muted text and the amber pair to meet AA.</li>
+    <li><strong>Headings</strong> — some section titles are <code>&lt;p class="font-semibold"&gt;</code> not <code>&lt;h2&gt;</code>. <em>Fix:</em> use real heading levels.</li>
+    <li><strong>Alt text</strong> — content images need meaningful <code>alt</code>; decorative icons should be <code>aria-hidden</code>. (Brand "K" and avatar initials are text — fine.)</li>
+    <li><strong>Confirm dialogs</strong> — native <code>confirm()</code> is accessible but inconsistent; a styled dialog should be focus-trapped and labelled.</li>
+    <li><strong>Error messages</strong> — form errors render as visible text but aren't wired to fields via <code>aria-describedby</code>/<code>aria-invalid</code>, nor in an <code>aria-live</code> region. <em>Fix:</em> associate &amp; announce.</li>
+    <li><strong>Touch targets</strong> — several icon buttons are <code>p-1.5</code> (~28px), below the 44px guideline. <em>Fix:</em> bump to ~40–44px on touch.</li>
+  </ul>
+  <p class="sub"><strong>Cannot fully verify from code:</strong> contrast ratios, screen-reader output, keyboard traps — these need a live run with axe-core + a screen reader.</p>
+
+  <!-- ============================== F ============================== -->
+  <h2 id="f">F · Security, Privacy &amp; Abuse-Prevention Review</h2>
+  <p class="sub">Reviewed from a safe, non-destructive, product/QA/configuration perspective. No exploitation performed.</p>
+
+  <h3>Authentication / login</h3>
+  <p>Flow is clear; errors are <strong>generic (good — no user enumeration)</strong>; login is <strong>rate-limited</strong> (10/5min/IP); passwords are <strong>scrypt-hashed</strong>; sessions are <strong>HMAC-signed with expiry + httpOnly + Secure(prod) + SameSite=lax</strong>. <span class="badge b-high">But</span> the gate is off, the <strong>default password is displayed</strong>, there's <strong>no reset/change-password</strong>, and <code>AUTH_SECRET</code> falls back to a dev string if unset (mitigated — Render auto-generates it).</p>
+
+  <h3>Authorization / roles</h3>
+  <p><strong>No authorization layer.</strong> With the gate open, anonymous = the first agent. Even with the gate on there are <strong>no roles</strong> — any user can delete other users (<code>deleteTeamUser</code>). Page separation doesn't exist beyond "logged in or not." Data queries <em>are</em> agent-scoped (good), but there's a single tenant. <em>Fix:</em> session-based agent resolution; add at least admin vs member roles for destructive ops.</p>
+
+  <h3>Forms / input handling</h3>
+  <p>Basic required-field checks; <strong>file uploads unrestricted</strong> (size/type); <strong>CSV unbounded</strong>; <code>addMediaLink</code> accepts any URL (feeds the open redirect). <em>Fix:</em> validate sizes/types/URLs; cap imports.</p>
+
+  <h3>Sensitive data</h3>
+  <p>Demo PII (names, phones, emails, owner records) is <strong>publicly exposed via the open gate</strong>. Passwords stored hashed (good). No payment data in scope. <code>/api/health</code> discloses DB up/down (minor). <em>Fix:</em> the gate fixes the big exposure.</p>
+
+  <h3>Privacy / compliance</h3>
+  <p><span class="badge b-ok">Good</span> Privacy Policy + Terms exist (template, noindex), linked from login; robots <code>noindex</code> set. <span class="badge b-med">Gaps</span> No cookie/consent banner; no in-product consent capture for WhatsApp messaging (PDPL + Meta opt-in). <em>Fix:</em> add consent capture for messaging and a cookie notice if analytics are added.</p>
+
+  <h3>Payment / checkout</h3>
+  <p>Not applicable — no payments in scope.</p>
+
+  <h3>Trust &amp; account safety</h3>
+  <p>HTTPS via Render <span class="badge b-ok">Good</span>. Destructive actions <strong>inconsistently confirmed</strong>. <strong>No account-activity notifications</strong>; no email-change/password-change flows. <em>Fix:</em> add confirmations + notifications before real launch.</p>
+
+  <h3>Error handling / information leakage</h3>
+  <p><span class="badge b-ok">Good</span> <code>error.tsx</code> logs server-side and shows a friendly message (no stack trace); friendly <code>not-found</code>; webhook returns terse statuses. No obvious DB/stack leakage to users.</p>
+
+  <h3>Abuse prevention</h3>
+  <p>Login + webhook rate-limited <span class="badge b-ok">Good</span>. <strong>No CAPTCHA / duplicate-submit guards</strong> on create/send actions; bulk send has no daily cap; simulate-inbound exposed. <em>Fix:</em> disable-on-submit, idempotency on sends, per-day send caps in real mode.</p>
+
+  <div class="callout"><p style="margin:0"><strong>Security headers:</strong> no headers config found (CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy) — likely absent. Add them in <code>next.config</code> <code>headers()</code>.</p></div>
+
+  <h3>Security QA checklist <span class="pill">safe / non-destructive only</span></h3>
+  <table>
+    <tr><th>ID</th><th>Area</th><th>Scenario</th><th>Steps</th><th>Expected</th><th>Risk</th></tr>
+    <tr><td>S-01</td><td>AuthZ</td><td>Unauthenticated access</td><td>Gate ON, open <code>/owners</code>, <code>/settings</code> logged out</td><td>Redirect to <code>/login</code></td><td>Critical</td></tr>
+    <tr><td>S-02</td><td>AuthZ</td><td>Anonymous mutation</td><td>Invoke a create/delete action without a session</td><td>Rejected</td><td>Critical</td></tr>
+    <tr><td>S-03</td><td>Redirect</td><td>Media open-redirect</td><td>Add a media link to an external URL, open <code>/api/media/&lt;id&gt;</code></td><td>No redirect to arbitrary host (allowlist only)</td><td>High</td></tr>
+    <tr><td>S-04</td><td>Upload</td><td>Oversized file</td><td>Upload a very large file</td><td>Rejected with size error</td><td>High</td></tr>
+    <tr><td>S-05</td><td>Upload</td><td>Disallowed type</td><td>Upload a non-document/media type</td><td>Rejected</td><td>High</td></tr>
+    <tr><td>S-06</td><td>Creds</td><td>Password disclosure</td><td>Load <code>/login</code> in production</td><td>No password shown anywhere</td><td>High</td></tr>
+    <tr><td>S-07</td><td>Webhook</td><td>Unsigned inbound (configured)</td><td>POST without signature when WhatsApp configured</td><td>401 rejected</td><td>High</td></tr>
+    <tr><td>S-08</td><td>Enumeration</td><td>Login error wording</td><td>Unknown email vs wrong password</td><td>Identical generic error</td><td>Med</td></tr>
+    <tr><td>S-09</td><td>Session</td><td>Tampered/expired cookie</td><td>Modify cookie, request a page</td><td>Treated as logged out</td><td>High</td></tr>
+    <tr><td>S-10</td><td>Rate limit</td><td>Login throttle</td><td>&gt;10 attempts / 5 min</td><td>Blocked</td><td>Med</td></tr>
+    <tr><td>S-11</td><td>Privacy</td><td>Policy presence</td><td>Visit <code>/privacy</code>, <code>/terms</code></td><td>Present, linked, noindex</td><td>Med</td></tr>
+    <tr><td>S-12</td><td>Leakage</td><td>Error pages</td><td>Trigger 404/500</td><td>Friendly, no stack/DB details</td><td>Med</td></tr>
+    <tr><td>S-13</td><td>Abuse</td><td>Duplicate send</td><td>Double-click Send</td><td>Single send (idempotent)</td><td>Med</td></tr>
+    <tr><td>S-14</td><td>Headers</td><td>Security headers</td><td>Inspect responses</td><td>CSP/HSTS/X-Frame-Options/Referrer-Policy present</td><td>Med</td></tr>
+  </table>
+
+  <!-- ============================== G ============================== -->
+  <h2 id="g">G · Conversion &amp; User Journey Review</h2>
+  <p>This is an <strong>internal operations tool</strong>, not a marketing funnel, so "conversion" = <strong>agent activation</strong> (getting a real agent messaging through it).</p>
+  <ul class="tight">
+    <li><strong>No onboarding / first-run guidance.</strong> A new agent lands on a dashboard with no "connect WhatsApp / import contacts / step 1". <em>Fix:</em> a setup checklist on the dashboard (Connect WhatsApp → Import owners → Tag your first conversation).</li>
+    <li><strong>No value-proposition surface.</strong> The open root/login doesn't say what it does or why to trust it. <em>Fix:</em> a short value line + the (existing) privacy/terms links.</li>
+    <li><strong>Demo vs real ambiguity.</strong> "Demo mode" chips exist in the inbox, but other sections look "live" while running on mocks. <em>Fix:</em> a consistent "Demo / not connected" banner tied to <code>isWhatsAppConfigured()</code>/<code>isAIEnabled()</code>.</li>
+    <li><strong>In-flow next-action clarity is good</strong> (suggested actions, AI suggestions) — keep it.</li>
+  </ul>
+
+  <!-- ============================== H ============================== -->
+  <h2 id="h">H · Content &amp; Microcopy Review</h2>
+  <table>
+    <tr><th>Element</th><th>Verdict &amp; rewrite</th></tr>
+    <tr><td>Login hint</td><td><span class="badge b-high">Remove</span> <code>Demo password: klientflo</code>. Replace with nothing in prod, or "Contact your admin for access."</td></tr>
+    <tr><td>Legal banner</td><td>The "Template notice" is honest and good — keep until counsel reviews.</td></tr>
+    <tr><td>Empty states</td><td>Good ("No agents yet — tag a conversation as Agent to add one"). Keep.</td></tr>
+    <tr><td>Destructive copy</td><td>Delete buttons only have <code>title="Delete"</code>. Add explicit confirm copy: <em>"Delete this user? They'll lose access immediately."</em></td></tr>
+    <tr><td>Bulk-send 24h flag</td><td>Clear and honest ("Outside 24h window — needs an approved template in production"). <span class="badge b-ok">Good</span></td></tr>
+    <tr><td>Error banners</td><td>Generic but safe. Make form errors field-specific: <em>"Phone number already belongs to another contact."</em> (already done for P2002 — extend the pattern).</td></tr>
+    <tr><td>Login subtitle</td><td>Rewrite → <em>"Sign in to manage your WhatsApp leads and listings."</em></td></tr>
+    <tr><td>Owners import</td><td>Rewrite → <em>"Upload a CSV (max 5 MB). We'll match columns like Name, Phone, Building automatically."</em> (also states the new limit)</td></tr>
+  </table>
+
+  <!-- ============================== I ============================== -->
+  <h2 id="i">I · Responsive Design Review</h2>
+  <table>
+    <tr><th>Breakpoint</th><th>Assessment</th></tr>
+    <tr><td>Large desktop / laptop</td><td>Good; width-capped content, grids scale via <code>lg:</code>/<code>xl:</code> breakpoints.</td></tr>
+    <tr><td>Tablet</td><td>Generally fine; the 13-item sidebar is off-canvas under <code>lg</code>, so tablet portrait gets the hamburger — acceptable.</td></tr>
+    <tr><td>Mobile</td><td>Strong after the responsive pass — off-canvas nav, scrollable kanban + calendar, wrapping inbox header, hidden-on-xs secondary text. Watch: touch-target size (<code>p-1.5</code> icon buttons) and owners-table scroll discoverability (add a fade/scroll hint).</td></tr>
+    <tr><td>Mobile security/usability</td><td>The password-reveal hint and simulate button are equally exposed on mobile.</td></tr>
+  </table>
+  <p class="sub"><strong>Cannot verify from code:</strong> actual rendering across Safari/Firefox/Edge or real devices — needs a live URL + device/browser testing (especially the Web Speech API mic, which behaves differently in Safari/Firefox).</p>
+
+  <!-- ============================== J ============================== -->
+  <h2 id="j">J · Performance &amp; Perceived Speed</h2>
+  <ul class="tight">
+    <li><strong>Every app page is <code>force-dynamic</code></strong> → server-rendered per request, each hitting Postgres. First paint waits on the DB; the new <code>loading.tsx</code> skeleton helps perceived speed. Consider caching read-heavy, low-volatility pages.</li>
+    <li><strong>Reports does a ranged <code>message.findMany</code> with no limit</strong> and aggregates in JS — fine now, slow at scale (already flagged in code). Move to a SQL rollup before large data.</li>
+    <li><strong>Broken <code>/seed/*</code> assets</strong> cause failed requests + layout jank on any page that renders them.</li>
+    <li><strong>No <code>next/image</code></strong> usage found → real property photos (when rendered) won't be optimised/lazy-loaded. Add <code>next/image</code>.</li>
+    <li><strong>PDF generation</strong> (<code>@react-pdf renderToBuffer</code>) is synchronous server work; large bulk sends add latency — fine for demo, watch under load.</li>
+    <li><strong>Animations</strong> are light (pulse skeleton, transitions); reduced-motion respected. Good.</li>
+    <li><strong>No real metrics</strong> (LCP/TTI/CLS) available without running Lighthouse against the live URL.</li>
+  </ul>
+
+  <!-- ============================== K ============================== -->
+  <h2 id="k">K · Security &amp; Trust Signals</h2>
+  <table>
+    <tr><th>Signal</th><th>State</th></tr>
+    <tr><td>Login/signup confidence</td><td>Undermined by the printed demo password and the open gate. Fix both.</td></tr>
+    <tr><td>Password field</td><td><code>type=password</code> ✓; no strength meter; no reset.</td></tr>
+    <tr><td>Error safety</td><td><span class="badge b-ok">Good</span> Generic, no leakage.</td></tr>
+    <tr><td>Privacy cues</td><td><span class="badge b-ok">Good</span> Policy + terms linked, noindex. Missing: cookie/consent.</td></tr>
+    <tr><td>HTTPS</td><td><span class="badge b-ok">Good</span> (Render).</td></tr>
+    <tr><td>Professional polish</td><td>Hurt by broken images + leftover starter SVGs + simulate button.</td></tr>
+    <tr><td>Contact / support visibility</td><td><span class="badge b-med">Missing</span> No support email or company footer. Add it.</td></tr>
+    <tr><td>Company legitimacy</td><td><span class="badge b-med">Missing</span> No about/contact; legal pages say "(insert your details)". Fill these in.</td></tr>
+    <tr><td>User control over data/account</td><td><span class="badge b-med">Missing</span> No change-password, no data export/delete self-service.</td></tr>
+  </table>
+
+  <!-- ============================== L ============================== -->
+  <h2 id="l">L · Prioritized Action Plan</h2>
+  <div class="rec-grid">
+    <div class="card">
+      <h4>Immediate (before any real launch)</h4>
+      <ol class="tight">
+        <li><strong>Re-enable the gate + remove the first-agent fallback</strong> for browser requests (Issue 1). Nothing else matters until this is done.</li>
+        <li><strong>Remove the login password hint</strong> + require a non-default <code>APP_PASSWORD</code>/seeded user (Issue 5).</li>
+        <li><strong>Fix the open redirect</strong> in <code>/api/media/[id]</code> (Issue 2).</li>
+        <li><strong>Add file-upload size/type limits + CSV cap</strong> (Issues 4, 7).</li>
+        <li><strong>Fix/remove broken <code>/seed/*</code> assets + leftover starter SVGs</strong> (Issue 3).</li>
+        <li><strong>Confirmations on destructive actions</strong> (delete user/media) (Issue 6).</li>
+        <li><strong>Hide the Simulate-inbound button</strong> in production (Issue 9).</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h4>Short-term</h4>
+      <ul class="tight">
+        <li>Webhook <strong>fail-closed</strong> signature check (Issue 8).</li>
+        <li><strong>Security headers</strong> (CSP/HSTS/X-Frame-Options/Referrer-Policy/Permissions-Policy).</li>
+        <li><strong>Roles</strong> (admin vs member) for destructive operations.</li>
+        <li><strong>Change-password + reset</strong> flow.</li>
+        <li>Field-level form validation + <code>aria</code> wiring; label all placeholder-only inputs.</li>
+        <li>Cookie/consent + fill in legal contact details; support/contact footer.</li>
+        <li>Group the 13 nav items.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Long-term</h4>
+      <ul class="tight">
+        <li>e2e/integration tests (Playwright) for key flows.</li>
+        <li>Reporting SQL rollup + caching.</li>
+        <li><code>next/image</code> + real asset pipeline.</li>
+        <li>Account-activity notifications.</li>
+        <li>Data export/delete (PDPL).</li>
+        <li>Monitoring/alerting (Sentry + uptime).</li>
+        <li>Per-day send caps + idempotency; audit log for sends/deletes.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============================== M ============================== -->
+  <h2 id="m">M · Final Scorecard</h2>
+  <p class="sub">Scored for <strong>launch-readiness to real clients</strong> (as requested). As a pure demo it scores 7–8 overall; the launch bar is stricter.</p>
+  <table class="score-table">
+    <tr><th>Category</th><th>Score</th><th>Note</th></tr>
+    <tr><td>Functionality</td><td>7/10</td><td>Works end-to-end in mock; broken assets, integrations unconnected.</td></tr>
+    <tr><td>UI design</td><td>7/10</td><td>Clean, consistent; leftover starter files + broken images.</td></tr>
+    <tr><td>UX clarity</td><td>6/10</td><td>Good in-flow; nav overload, no onboarding, demo affordances.</td></tr>
+    <tr><td>Accessibility</td><td>6/10</td><td>Good focus/motion; placeholder labels, unverified contrast.</td></tr>
+    <tr><td>Mobile experience</td><td>7/10</td><td>Solid responsive pass.</td></tr>
+    <tr><td>Content clarity</td><td>6/10</td><td>Mostly clear; password hint + template legal.</td></tr>
+    <tr><td>Trust / professionalism</td><td>4/10</td><td>Open gate, broken images, exposed password.</td></tr>
+    <tr><td>Security posture</td><td>3/10</td><td>Open gate, anon=first-agent, open redirect, no upload limits/RBAC.</td></tr>
+    <tr><td>Privacy readiness</td><td>4/10</td><td>Policy/terms exist; public PII exposure, no consent.</td></tr>
+    <tr><td>Conversion readiness</td><td>5/10</td><td>Internal tool; no onboarding/value surface.</td></tr>
+    <tr><td>QA readiness</td><td>6/10</td><td>30 unit tests, green builds; no e2e/integration.</td></tr>
+    <tr><td><strong>Overall product quality</strong></td><td><strong>5/10</strong></td><td>Strong bones; not client-launch-ready until security/polish fixed.</td></tr>
+  </table>
+
+  <!-- ============================== N ============================== -->
+  <h2 id="n">N · Final Recommendations</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <h4>Top 5 to fix first</h4>
+      <ol class="tight">
+        <li>Re-enable auth + kill the first-agent fallback.</li>
+        <li>Remove the login password disclosure.</li>
+        <li>Fix the <code>/api/media</code> open redirect.</li>
+        <li>Add upload size/type + CSV caps.</li>
+        <li>Fix the broken <code>/seed/*</code> assets + remove starter SVGs.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h4>Top 5 UX improvements</h4>
+      <ol class="tight">
+        <li>First-run setup checklist/onboarding.</li>
+        <li>Group the 13 nav items.</li>
+        <li>Consistent styled confirm dialogs for destructive actions.</li>
+        <li>Field-level inline validation.</li>
+        <li>Consistent "Demo / not connected" banner tied to integration status.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h4>Top 5 QA tests before launch</h4>
+      <ol class="tight">
+        <li>Unauthenticated access to every route → redirect (S-01).</li>
+        <li>Anonymous mutation rejected (S-02).</li>
+        <li>Oversized/wrong-type upload rejected (S-04/05).</li>
+        <li>Template→PDF renders correctly with merged data (F-11).</li>
+        <li>Cross-tenant <code>/clients/[id]</code> access blocked (P-02).</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h4>Top 5 security/privacy checks</h4>
+      <ol class="tight">
+        <li>Gate enforced + session-only agent resolution.</li>
+        <li>Open-redirect closed + URL allowlist.</li>
+        <li>Security headers (CSP/HSTS/X-Frame-Options/Referrer-Policy) present.</li>
+        <li>Webhook fails closed when configured.</li>
+        <li>Consent capture + filled-in privacy contact, plus password reset/change.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="callout info" style="margin-top:26px">
+    <h4>Reviewer's honest note</h4>
+    <p style="margin:0">Most of the critical security findings stem from the access gate being open, which was a deliberate choice for the demo. That's completely fine for a demo link — but the moment a real client's data goes in, Issues 1–8 are non-negotiable. A practical approach: keep the demo experience behind a <code>DEMO_MODE</code> flag (so it can still be shown off openly), and make production <strong>secure-by-default</strong>.</p>
+  </div>
+
+  <div class="callout">
+    <h4>What would deepen this audit</h4>
+    <p style="margin:0">To turn the "likely" accessibility/performance/cross-browser findings into measured ones, the reviewer needs: the <strong>live Render URL</strong>; <strong>test credentials with the gate ON</strong>; permission to run <strong>Lighthouse + axe-core</strong>; <strong>real devices/browsers</strong> (Safari/Firefox/Edge — especially the Web Speech mic); and confirmation of the <strong>Render env vars actually set</strong> (to distinguish demo-mode from real-mode behaviour).</p>
+  </div>
+
+  <footer>
+    Klientflo — Pre-Launch QA &amp; Security Audit · Internal review document, not for external distribution. Next step (on approval): convert the Prioritized Action Plan into an <code>md</code> build plan and fix each item.
+  </footer>
+
+</div>
+</body>
+</html>
