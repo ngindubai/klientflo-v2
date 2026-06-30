@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import "dotenv/config";
@@ -52,6 +53,24 @@ async function main() {
       quietHoursMessage:
         "Thank you for your message. I've received your enquiry and will respond as soon as possible.",
       brokerNumber: "BRN-12345",
+    },
+  });
+
+  // Default login account (scrypt-hashed) so per-user auth works out of the box.
+  // Idempotent: an existing user keeps its password.
+  const seedPassword = (process.env.APP_PASSWORD || "klientflo").trim();
+  const salt = crypto.randomBytes(16).toString("hex");
+  const passwordHash = `scrypt:${salt}:${crypto
+    .scryptSync(seedPassword, salt, 64)
+    .toString("hex")}`;
+  await prisma.user.upsert({
+    where: { email: email.toLowerCase() },
+    update: {},
+    create: {
+      agentId,
+      email: email.toLowerCase(),
+      name: agent.name,
+      passwordHash,
     },
   });
 

@@ -132,6 +132,7 @@ model Agent {
   updatedAt DateTime @updatedAt
 
   settings         Settings?
+  users            User[]
   clients          Contact[]
   conversations    Conversation[]
   messages         Message[]
@@ -203,6 +204,24 @@ model Owner {
 
   @@index([agentId, area])
   @@index([agentId, building])
+}
+
+// --- Users / auth --------------------------------------------------------
+// Per-user login accounts (hardened auth). A User belongs to an Agent tenant.
+// Passwords are stored as scrypt hashes (see src/server/auth.ts). Note: the
+// access gate is intentionally left open in middleware; this is the production-
+// ready auth system ready to enforce when the gate is switched back on.
+model User {
+  id           String   @id @default(cuid())
+  agentId      String
+  agent        Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([agentId])
 }
 
 // --- Property-source scrape jobs (async, progress-tracked) ---------------

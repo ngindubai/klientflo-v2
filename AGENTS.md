@@ -6,9 +6,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Workflow
 
-- **Always commit and push to `main`.** `main` is the single source of truth and
-  the branch Render deploys from (`render.yaml` → `branch: main`, `autoDeploy:
-  true`). Do not create or push to feature branches unless explicitly asked.
+- **Always commit and push to `claude/great-carson-8mjbfm`.** This is the
+  production branch and the one Render deploys from (`render.yaml` → `branch:
+  claude/great-carson-8mjbfm`, `autoDeploy: true`). Do not create or push to
+  other branches unless explicitly asked.
 - Before each push: `tsc --noEmit`, `eslint`, and `next build` must be green.
 
 # Klientflo — project guide
