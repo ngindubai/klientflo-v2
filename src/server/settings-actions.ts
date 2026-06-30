@@ -1,8 +1,10 @@
 "use server";
 
+import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
+import { getMessageTemplates } from "@/server/settings";
 
 export type AiSettingsInput = {
   aiAutoReplyEnabled: boolean;
@@ -41,6 +43,38 @@ export async function updateAiSettings(input: AiSettingsInput) {
   });
   revalidatePath("/settings");
   revalidatePath("/inbox");
+}
+
+// --- Reusable WhatsApp message templates (stored on Settings) ------------
+
+export async function addMessageTemplate(name: string, body: string) {
+  const agent = await getCurrentAgent();
+  if (!name.trim() || !body.trim()) {
+    throw new Error("Both a name and a message are required.");
+  }
+  const current = await getMessageTemplates();
+  const next = [
+    ...current,
+    { id: crypto.randomUUID(), name: name.trim(), body: body.trim() },
+  ];
+  await prisma.settings.upsert({
+    where: { agentId: agent.id },
+    create: { agentId: agent.id, whatsappTemplates: next },
+    update: { whatsappTemplates: next },
+  });
+  revalidatePath("/settings");
+  revalidatePath("/owners");
+}
+
+export async function deleteMessageTemplate(id: string) {
+  const agent = await getCurrentAgent();
+  const next = (await getMessageTemplates()).filter((t) => t.id !== id);
+  await prisma.settings.update({
+    where: { agentId: agent.id },
+    data: { whatsappTemplates: next },
+  });
+  revalidatePath("/settings");
+  revalidatePath("/owners");
 }
 
 export type GeneralSettingsInput = {

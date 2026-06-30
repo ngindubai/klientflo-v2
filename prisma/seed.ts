@@ -53,6 +53,18 @@ async function main() {
       quietHoursMessage:
         "Thank you for your message. I've received your enquiry and will respond as soon as possible.",
       brokerNumber: "BRN-12345",
+      whatsappTemplates: [
+        {
+          id: crypto.randomUUID(),
+          name: "Sale outreach",
+          body: "Hello, I'm a real estate agent representing a buyer who is ready to purchase in your building. If you'd consider selling your unit, I can bring a serious, pre-qualified client. Would you be open to discussing it?",
+        },
+        {
+          id: crypto.randomUUID(),
+          name: "Rental outreach",
+          body: "Hello, I'm a real estate agent with a qualified tenant actively looking to rent in your building. If you'd consider letting your unit, I'd be glad to arrange a viewing with a serious, pre-vetted client. Would that work?",
+        },
+      ],
     },
   });
 

@@ -1,10 +1,11 @@
-import { Bot, SlidersHorizontal, Plug, Users } from "lucide-react";
+import { Bot, SlidersHorizontal, Plug, Users, MessageSquareText } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { AiSettingsForm } from "@/components/settings/ai-settings-form";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
 import { TeamSettings } from "@/components/settings/team-settings";
-import { getSettings } from "@/server/settings";
+import { MessageTemplates } from "@/components/settings/message-templates";
+import { getSettings, getMessageTemplates } from "@/server/settings";
 import { getTeamUsers } from "@/server/users";
 import { isAIEnabled } from "@/server/ai/client";
 import { isWhatsAppConfigured } from "@/server/whatsapp";
@@ -16,7 +17,11 @@ import { cn } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const [s, teamUsers] = await Promise.all([getSettings(), getTeamUsers()]);
+  const [s, teamUsers, messageTemplates] = await Promise.all([
+    getSettings(),
+    getTeamUsers(),
+    getMessageTemplates(),
+  ]);
 
   const aiInitial: AiSettingsInput = {
     aiAutoReplyEnabled: s.aiAutoReplyEnabled,
@@ -86,6 +91,14 @@ export default async function SettingsPage() {
 
         <SectionCard title="WhatsApp, calendar & property sources" icon={SlidersHorizontal} className="lg:col-span-2">
           <GeneralSettingsForm initial={generalInitial} />
+        </SectionCard>
+
+        <SectionCard
+          title="Message templates"
+          icon={MessageSquareText}
+          className="lg:col-span-3"
+        >
+          <MessageTemplates templates={messageTemplates} />
         </SectionCard>
 
         <SectionCard title="Team & access" icon={Users} className="lg:col-span-3">
