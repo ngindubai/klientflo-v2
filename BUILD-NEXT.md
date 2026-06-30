@@ -1,14 +1,25 @@
 # Klientflo — Build-Next Plan
 
-> **Status (branch `claude/remove-demo-password-gate-ewsctv`):** Track B feature
-> chunks **16–22 are implemented** — unified Contact + tagging, AI auto-tagging,
-> Agents/Investors sections, owners database, reporting, storage hub
-> (templates→PDF via @react-pdf, floorplans, videos), and bulk PDF send. Each
-> was verified locally with `tsc --noEmit`, `eslint`, and `next build` (all
-> green) and the PDF renderer was runtime-checked to emit a valid `%PDF` buffer.
-> Migrations are written but applied at deploy by `prisma migrate deploy`.
-> **Track A (go-live hardening) is still outstanding** — credentials, auth
-> restore, S3, clean seed, monitoring (see below + `docs/HANDOVER-PLAN.html`).
+> **Status (production branch `claude/great-carson-8mjbfm`):**
+> **Track B feature chunks 16–22 are complete** — unified Contact + tagging, AI
+> auto-tagging, Agents/Investors sections, owners database, reporting, storage
+> hub (templates→PDF via @react-pdf, floorplans, videos), and bulk PDF send.
+>
+> **Track A (go-live hardening) — in progress:**
+> - ✅ S3 storage adapter (uploads persist off Render's ephemeral disk)
+> - ✅ Auth hardening — `User` accounts, scrypt hashing, expiring+secure
+>   sessions, Team management UI (gate intentionally left open)
+> - ✅ WhatsApp webhook signature enforcement (already enforced when
+>   `WHATSAPP_APP_SECRET` is set)
+> - ✅ Test suite (`pnpm test`, vitest) — CSV import, merge fields, auth crypto
+> - ✅ Pagination on contacts / agents / investors / owners
+> - ⬜ Remaining: error/empty-state polish, mobile pass, `middleware`→`proxy`
+>   rename, and the ops/credentials items (WhatsApp/Claude/S3 creds, DB
+>   backups, monitoring) — see `docs/HANDOVER-PLAN.html`.
+>
+> Everything verified locally with `tsc --noEmit`, `eslint`, `next build`, and
+> `pnpm test` (all green). Migrations are applied at deploy by `prisma migrate
+> deploy`. Demo seed data is kept on purpose.
 
 Engineering build plan that continues the existing chunk roadmap (Chunks 1–15
 are complete; see `AGENTS.md`). Two tracks run in parallel:

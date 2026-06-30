@@ -2,8 +2,9 @@ import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
+import { Pager } from "@/components/ui/pager";
 import { UrgencyBadge } from "@/components/dashboard/urgency-badge";
-import { getClients } from "@/server/clients";
+import { getClients, getContactsCount, CONTACTS_PAGE_SIZE } from "@/server/clients";
 import { formatAED } from "@/lib/utils";
 import { humanizeEnum, type ContactCategory } from "@/lib/constants";
 
@@ -25,11 +26,18 @@ type SectionConfig = {
 export async function ContactsSection({
   config,
   query,
+  page = 1,
+  basePath,
 }: {
   config: SectionConfig;
   query?: string;
+  page?: number;
+  basePath: string;
 }) {
-  const contacts = await getClients(query, config.category);
+  const [contacts, total] = await Promise.all([
+    getClients(query, config.category, page),
+    getContactsCount(query, config.category),
+  ]);
 
   return (
     <>
@@ -123,6 +131,14 @@ export async function ContactsSection({
           })}
         </div>
       )}
+
+      <Pager
+        page={page}
+        pageSize={CONTACTS_PAGE_SIZE}
+        total={total}
+        basePath={basePath}
+        query={query ? { q: query } : undefined}
+      />
     </>
   );
 }

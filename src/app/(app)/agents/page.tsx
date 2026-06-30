@@ -5,12 +5,14 @@ export const dynamic = "force-dynamic";
 export default async function AgentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, page } = await searchParams;
   return (
     <ContactsSection
       query={q}
+      page={Number(page) || 1}
+      basePath="/agents"
       config={{
         category: "agent",
         title: "Agents",

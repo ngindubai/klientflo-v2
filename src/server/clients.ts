@@ -1,40 +1,65 @@
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
 import type { ContactCategory } from "@/lib/constants";
+import type { Prisma } from "@/generated/prisma/client";
+
+export const CONTACTS_PAGE_SIZE = 30;
+
+function contactWhere(
+  agentId: string,
+  category: ContactCategory,
+  query?: string,
+): Prisma.ContactWhereInput {
+  return {
+    agentId,
+    category,
+    ...(query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { phone: { contains: query } },
+            { email: { contains: query, mode: "insensitive" } },
+            { area: { contains: query, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  };
+}
 
 /**
- * Contacts for the current agent, with a derived max-urgency from their
- * conversations. Defaults to the `client` category so the Clients section shows
- * only clients; the Agents / Investors sections reuse this with their category.
+ * Paginated contacts for the current agent, with a derived max-urgency from
+ * their conversations. Defaults to the `client` category so the Clients section
+ * shows only clients; the Agents / Investors sections reuse this.
  */
 export async function getClients(
   query?: string,
   category: ContactCategory = "client",
+  page = 1,
 ) {
   const agent = await getCurrentAgent();
   const clients = await prisma.contact.findMany({
-    where: {
-      agentId: agent.id,
-      category,
-      ...(query
-        ? {
-            OR: [
-              { name: { contains: query, mode: "insensitive" } },
-              { phone: { contains: query } },
-              { email: { contains: query, mode: "insensitive" } },
-              { area: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-    },
+    where: contactWhere(agent.id, category, query),
     orderBy: { updatedAt: "desc" },
     include: { conversations: { select: { urgency: true } } },
+    skip: (Math.max(1, page) - 1) * CONTACTS_PAGE_SIZE,
+    take: CONTACTS_PAGE_SIZE,
   });
 
   return clients.map((c) => ({
     ...c,
     maxUrgency: c.conversations.reduce((m, conv) => Math.max(m, conv.urgency), 0),
   }));
+}
+
+/** Count of contacts matching a category + query, for pagination. */
+export async function getContactsCount(
+  query?: string,
+  category: ContactCategory = "client",
+) {
+  const agent = await getCurrentAgent();
+  return prisma.contact.count({
+    where: contactWhere(agent.id, category, query),
+  });
 }
 
 /** A single client with everything linked to it. */

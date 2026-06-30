@@ -1,9 +1,15 @@
 import { MessageCircle, Phone } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
+import { Pager } from "@/components/ui/pager";
 import { OwnerImport } from "@/components/owners/owner-import";
 import { OwnerFilters } from "@/components/owners/owner-filters";
-import { getOwners, getOwnerFacets } from "@/server/owners";
+import {
+  getOwners,
+  getOwnersCount,
+  getOwnerFacets,
+  OWNERS_PAGE_SIZE,
+} from "@/server/owners";
 
 export const dynamic = "force-dynamic";
 
@@ -16,12 +22,20 @@ function waLink(phone: string) {
 export default async function OwnersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; area?: string; building?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    area?: string;
+    building?: string;
+    page?: string;
+  }>;
 }) {
-  const { q, area, building } = await searchParams;
-  const [owners, facets] = await Promise.all([
-    getOwners({ query: q, area, building }),
+  const { q, area, building, page } = await searchParams;
+  const filters = { query: q, area, building };
+  const currentPage = Number(page) || 1;
+  const [owners, facets, total] = await Promise.all([
+    getOwners(filters, currentPage),
     getOwnerFacets(),
+    getOwnersCount(filters),
   ]);
 
   return (
@@ -108,13 +122,19 @@ export default async function OwnersPage({
                   ))}
                 </tbody>
               </table>
-              {owners.length >= 500 && (
-                <p className="mt-3 text-center text-xs text-foreground-muted">
-                  Showing the first 500 — narrow the search to see more.
-                </p>
-              )}
             </div>
           )}
+          <Pager
+            page={currentPage}
+            pageSize={OWNERS_PAGE_SIZE}
+            total={total}
+            basePath="/owners"
+            query={{
+              ...(q ? { q } : {}),
+              ...(area ? { area } : {}),
+              ...(building ? { building } : {}),
+            }}
+          />
         </Card>
       )}
     </>

@@ -7,29 +7,42 @@ export type OwnerFilters = {
   building?: string;
 };
 
-/** Owners for the current agent, searchable by name/phone and filterable by area/building. */
-export async function getOwners(filters: OwnerFilters = {}) {
-  const agent = await getCurrentAgent();
+export const OWNERS_PAGE_SIZE = 50;
+
+function ownerWhere(agentId: string, filters: OwnerFilters) {
   const q = filters.query?.trim();
+  return {
+    agentId,
+    ...(filters.area ? { area: filters.area } : {}),
+    ...(filters.building ? { building: filters.building } : {}),
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" as const } },
+            { phone: { contains: q } },
+            { email: { contains: q, mode: "insensitive" as const } },
+            { unit: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+}
+
+/** Paginated owners, searchable by name/phone and filterable by area/building. */
+export async function getOwners(filters: OwnerFilters = {}, page = 1) {
+  const agent = await getCurrentAgent();
   return prisma.owner.findMany({
-    where: {
-      agentId: agent.id,
-      ...(filters.area ? { area: filters.area } : {}),
-      ...(filters.building ? { building: filters.building } : {}),
-      ...(q
-        ? {
-            OR: [
-              { name: { contains: q, mode: "insensitive" } },
-              { phone: { contains: q } },
-              { email: { contains: q, mode: "insensitive" } },
-              { unit: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-    },
+    where: ownerWhere(agent.id, filters),
     orderBy: [{ building: "asc" }, { unit: "asc" }, { name: "asc" }],
-    take: 500,
+    skip: (Math.max(1, page) - 1) * OWNERS_PAGE_SIZE,
+    take: OWNERS_PAGE_SIZE,
   });
+}
+
+/** Count of owners matching the filters, for pagination. */
+export async function getOwnersCount(filters: OwnerFilters = {}) {
+  const agent = await getCurrentAgent();
+  return prisma.owner.count({ where: ownerWhere(agent.id, filters) });
 }
 
 /** Distinct areas and buildings for the filter dropdowns. */
