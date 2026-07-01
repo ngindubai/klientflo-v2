@@ -1,39 +1,41 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { MessageCircle, Phone, Send, Pencil, Check } from "lucide-react";
 import {
-  updateOwnerNote,
-  sendOwnerMessages,
-  draftOwnerMessage,
-} from "@/server/owner-actions";
+  updateContactNote,
+  sendContactMessages,
+  draftContactMessage,
+} from "@/server/contact-actions";
 import { RecipientMessageDialog } from "@/components/messaging/recipient-message-dialog";
 import type { MessageTemplate } from "@/server/settings";
+import { formatAED } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
-export type OwnerRow = {
+export type ContactRow = {
   id: string;
   name: string;
-  phone: string | null;
-  building: string | null;
-  unit: string | null;
+  phone: string;
   area: string | null;
+  budgetMax: number | null;
+  agencyName: string | null;
   notes: string | null;
 };
 
-export function OwnersTable({
-  owners,
+export function ContactsTable({
+  contacts,
   templates,
+  category,
 }: {
-  owners: OwnerRow[];
+  contacts: ContactRow[];
   templates: MessageTemplate[];
+  category: "agent" | "investor";
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [compose, setCompose] = useState<string[] | null>(null);
-
-  const withPhone = owners.filter((o) => o.phone);
-  const allSelected =
-    withPhone.length > 0 && withPhone.every((o) => selected.has(o.id));
+  const isAgent = category === "agent";
+  const allSelected = contacts.length > 0 && contacts.every((c) => selected.has(c.id));
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -43,13 +45,9 @@ export function OwnersTable({
       return next;
     });
   }
-  function toggleAll() {
-    setSelected(allSelected ? new Set() : new Set(withPhone.map((o) => o.id)));
-  }
 
   return (
     <>
-      {/* Selection action bar */}
       {selected.size > 0 && (
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary-muted px-3 py-2">
           <span className="text-sm font-medium text-primary">
@@ -66,7 +64,7 @@ export function OwnersTable({
               onClick={() => setCompose([...selected])}
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              <Send className="size-3.5" /> Message owners
+              <Send className="size-3.5" /> Message {isAgent ? "agents" : "investors"}
             </button>
           </div>
         </div>
@@ -80,73 +78,71 @@ export function OwnersTable({
                 <input
                   type="checkbox"
                   checked={allSelected}
-                  onChange={toggleAll}
+                  onChange={() =>
+                    setSelected(allSelected ? new Set() : new Set(contacts.map((c) => c.id)))
+                  }
                   aria-label="Select all"
-                  disabled={withPhone.length === 0}
                 />
               </th>
               <th className="px-2 py-2 font-medium">Name</th>
-              <th className="px-2 py-2 font-medium">Building</th>
-              <th className="px-2 py-2 font-medium">Unit</th>
-              <th className="px-2 py-2 font-medium">Area</th>
+              <th className="px-2 py-2 font-medium">{isAgent ? "Agency" : "Looking in"}</th>
+              <th className="px-2 py-2 font-medium">{isAgent ? "Area" : "Ticket"}</th>
               <th className="px-2 py-2 font-medium">Notes</th>
               <th className="px-2 py-2 text-right font-medium">Contact</th>
             </tr>
           </thead>
           <tbody>
-            {owners.map((o) => (
+            {contacts.map((c) => (
               <tr
-                key={o.id}
+                key={c.id}
                 className={cn(
                   "border-b border-border/60 last:border-0 hover:bg-surface-muted/50",
-                  selected.has(o.id) && "bg-primary-muted/40",
+                  selected.has(c.id) && "bg-primary-muted/40",
                 )}
               >
                 <td className="px-2 py-2 align-top">
                   <input
                     type="checkbox"
-                    checked={selected.has(o.id)}
-                    onChange={() => toggle(o.id)}
-                    disabled={!o.phone}
-                    aria-label={`Select ${o.name}`}
+                    checked={selected.has(c.id)}
+                    onChange={() => toggle(c.id)}
+                    aria-label={`Select ${c.name}`}
                   />
                 </td>
                 <td className="px-2 py-2 align-top">
-                  <div className="font-medium">{o.name}</div>
-                  <div className="text-xs text-foreground-muted">{o.phone ?? "—"}</div>
+                  <Link href={`/clients/${c.id}`} className="font-medium hover:text-primary">
+                    {c.name}
+                  </Link>
+                  <div className="text-xs text-foreground-muted">{c.phone}</div>
                 </td>
                 <td className="px-2 py-2 align-top text-foreground-muted">
-                  {o.building ?? "—"}
+                  {isAgent ? c.agencyName ?? "—" : c.area ?? "—"}
                 </td>
                 <td className="px-2 py-2 align-top text-foreground-muted">
-                  {o.unit ?? "—"}
-                </td>
-                <td className="px-2 py-2 align-top text-foreground-muted">
-                  {o.area ?? "—"}
+                  {isAgent
+                    ? c.area ?? "—"
+                    : c.budgetMax != null
+                      ? formatAED(c.budgetMax)
+                      : "—"}
                 </td>
                 <td className="px-2 py-2 align-top">
-                  <NotesCell id={o.id} notes={o.notes} />
+                  <NotesCell id={c.id} notes={c.notes} />
                 </td>
                 <td className="px-2 py-2 align-top">
                   <div className="flex items-center justify-end gap-1.5">
-                    {o.phone && (
-                      <>
-                        <button
-                          onClick={() => setCompose([o.id])}
-                          title="Send WhatsApp message"
-                          className="rounded-md border border-border p-1.5 text-emerald-600 hover:bg-surface-muted"
-                        >
-                          <MessageCircle className="size-4" />
-                        </button>
-                        <a
-                          href={`tel:${o.phone}`}
-                          title="Call"
-                          className="rounded-md border border-border p-1.5 text-foreground-muted hover:bg-surface-muted"
-                        >
-                          <Phone className="size-4" />
-                        </a>
-                      </>
-                    )}
+                    <button
+                      onClick={() => setCompose([c.id])}
+                      title="Send WhatsApp message"
+                      className="rounded-md border border-border p-1.5 text-emerald-600 hover:bg-surface-muted"
+                    >
+                      <MessageCircle className="size-4" />
+                    </button>
+                    <a
+                      href={`tel:${c.phone}`}
+                      title="Call"
+                      className="rounded-md border border-border p-1.5 text-foreground-muted hover:bg-surface-muted"
+                    >
+                      <Phone className="size-4" />
+                    </a>
                   </div>
                 </td>
               </tr>
@@ -160,9 +156,9 @@ export function OwnersTable({
           recipientIds={compose}
           count={compose.length}
           templates={templates}
-          noun="owner"
-          send={sendOwnerMessages}
-          draft={draftOwnerMessage}
+          noun={isAgent ? "agent" : "investor"}
+          send={sendContactMessages}
+          draft={draftContactMessage}
           onClose={() => {
             setCompose(null);
             setSelected(new Set());
@@ -173,14 +169,13 @@ export function OwnersTable({
   );
 }
 
-/** Inline-editable note cell. */
 function NotesCell({ id, notes }: { id: string; notes: string | null }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(notes ?? "");
   const [pending, start] = useTransition();
 
   function save() {
-    start(() => updateOwnerNote(id, value).then(() => setEditing(false)));
+    start(() => updateContactNote(id, value).then(() => setEditing(false)));
   }
 
   if (editing) {

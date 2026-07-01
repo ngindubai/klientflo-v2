@@ -14,6 +14,7 @@ export default async function AgentsPage({
       area={area}
       page={Number(page) || 1}
       basePath="/agents"
+      variant="table"
       config={{
         category: "agent",
         title: "Agents",

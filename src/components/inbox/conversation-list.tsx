@@ -47,40 +47,38 @@ export function ConversationList({
                 c.id === activeId && "bg-surface-muted",
               )}
             >
-              {/* Line 1: name + tag (always visible) + time */}
+              {/* Line 1: name + time */}
               <div className="flex items-center gap-2">
                 {c.awaitingReply && (
                   <span className="size-2 shrink-0 rounded-full bg-accent" title="Awaiting reply" />
                 )}
                 <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-                    c.client
-                      ? CONTACT_CATEGORY_CHIP[c.client.category]
-                      : "border-border bg-surface-muted text-foreground-muted",
-                  )}
-                >
-                  {c.client
-                    ? CONTACT_CATEGORY_LABELS[c.client.category]
-                    : "Untagged"}
-                </span>
                 {c.lastMessageAt && (
                   <span className="shrink-0 text-xs text-foreground-muted">
                     {formatRelativeTime(c.lastMessageAt)}
                   </span>
                 )}
               </div>
-              {/* Line 2: message preview (more visible) + urgency */}
-              <div className="mt-1 flex items-start justify-between gap-2">
+              {/* Line 2: preview (stops before the tag column) + tag & priority */}
+              <div className="mt-1 flex items-start gap-3">
                 <p className="line-clamp-2 min-w-0 flex-1 text-xs text-foreground-muted">
                   {preview(c.messages[0])}
                 </p>
-                {c.urgency >= 4 && (
-                  <span className="shrink-0">
-                    <UrgencyBadge level={c.urgency} />
+                <span className="flex shrink-0 flex-col items-end gap-1">
+                  <span
+                    className={cn(
+                      "rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                      c.client
+                        ? CONTACT_CATEGORY_CHIP[c.client.category]
+                        : "border-border bg-surface-muted text-foreground-muted",
+                    )}
+                  >
+                    {c.client
+                      ? CONTACT_CATEGORY_LABELS[c.client.category]
+                      : "Untagged"}
                   </span>
-                )}
+                  {c.urgency >= 4 && <UrgencyBadge level={c.urgency} />}
+                </span>
               </div>
             </Link>
           </li>

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { Pager } from "@/components/ui/pager";
 import { ContactFilters } from "@/components/clients/contact-filters";
+import { ContactsTable } from "@/components/clients/contacts-table";
 import { UrgencyBadge } from "@/components/dashboard/urgency-badge";
 import {
   getClients,
@@ -11,6 +12,7 @@ import {
   getContactAreas,
   CONTACTS_PAGE_SIZE,
 } from "@/server/clients";
+import { getMessageTemplates } from "@/server/settings";
 import { formatAED } from "@/lib/utils";
 import { humanizeEnum, type ContactCategory } from "@/lib/constants";
 
@@ -35,12 +37,14 @@ export async function ContactsSection({
   area,
   page = 1,
   basePath,
+  variant = "cards",
 }: {
   config: SectionConfig;
   query?: string;
   area?: string;
   page?: number;
   basePath: string;
+  variant?: "cards" | "table";
 }) {
   const filters = { query, area };
   const [contacts, total, areas] = await Promise.all([
@@ -48,6 +52,8 @@ export async function ContactsSection({
     getContactsCount(filters, config.category),
     getContactAreas(config.category),
   ]);
+  const templates =
+    variant === "table" ? await getMessageTemplates() : [];
 
   const isInvestor = config.category === "investor";
 
@@ -77,6 +83,22 @@ export async function ContactsSection({
       {contacts.length === 0 ? (
         <Card className="p-10 text-center text-sm text-foreground-muted">
           {query || area ? "No matches for these filters." : config.emptyText}
+        </Card>
+      ) : variant === "table" ? (
+        <Card className="p-4">
+          <ContactsTable
+            category={config.category === "agent" ? "agent" : "investor"}
+            templates={templates}
+            contacts={contacts.map((c) => ({
+              id: c.id,
+              name: c.name,
+              phone: c.phone,
+              area: c.area,
+              budgetMax: c.budgetMax,
+              agencyName: c.agencyName,
+              notes: c.notes,
+            }))}
+          />
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">

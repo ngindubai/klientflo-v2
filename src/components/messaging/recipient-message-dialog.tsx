@@ -2,56 +2,61 @@
 
 import { useState, useTransition } from "react";
 import { X, Send, Sparkles, Mic, AlertTriangle } from "lucide-react";
-import {
-  sendOwnerMessages,
-  draftOwnerMessage,
-  type OwnerSendResult,
-} from "@/server/owner-actions";
 import { useSpeechRecognition } from "@/components/voice/use-speech-recognition";
 import type { MessageTemplate } from "@/server/settings";
 import { cn } from "@/lib/utils";
+
+export type SendResult = { sent: number; failed: number; demo: boolean };
 
 const inputClass =
   "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-primary";
 
 /**
- * Compose and send a WhatsApp message to selected owners — from a preset
- * template, a custom message, voice dictation, or AI-generated text.
+ * Compose and send a WhatsApp message to selected recipients (owners or
+ * contacts) — from a preset template, a custom message, voice dictation, or
+ * AI-generated text. The concrete send/draft server actions are passed in.
  */
-export function OwnerMessageDialog({
-  ownerIds,
+export function RecipientMessageDialog({
+  recipientIds,
   count,
   templates,
+  noun = "recipient",
   onClose,
+  send,
+  draft,
 }: {
-  ownerIds: string[];
+  recipientIds: string[];
   count: number;
   templates: MessageTemplate[];
+  noun?: string;
   onClose: () => void;
+  send: (ids: string[], message: string) => Promise<SendResult>;
+  draft: (brief: string) => Promise<string>;
 }) {
   const [message, setMessage] = useState("");
   const [brief, setBrief] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [result, setResult] = useState<OwnerSendResult | null>(null);
+  const [result, setResult] = useState<SendResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const speech = useSpeechRecognition(setMessage);
 
+  const label = (n: number) => `${n} ${noun}${n === 1 ? "" : "s"}`;
+
   function generate() {
     setGenerating(true);
     setError(null);
-    draftOwnerMessage(brief)
+    draft(brief)
       .then((t) => setMessage(t))
       .catch(() => setError("Couldn't generate a message — try a custom one."))
       .finally(() => setGenerating(false));
   }
 
-  function send() {
+  function submit() {
     setError(null);
     start(async () => {
       try {
-        const r = await sendOwnerMessages(ownerIds, message);
-        setResult(r);
+        setResult(await send(recipientIds, message));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Could not send.");
       }
@@ -62,9 +67,7 @@ export function OwnerMessageDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-lg rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-semibold">
-            Message {count} owner{count === 1 ? "" : "s"}
-          </h2>
+          <h2 className="text-base font-semibold">Message {label(count)}</h2>
           <button
             onClick={onClose}
             className="rounded-md p-1 text-foreground-muted hover:bg-surface-muted"
@@ -82,14 +85,13 @@ export function OwnerMessageDialog({
             </p>
             {result.demo && (
               <p className="rounded-lg bg-surface-muted px-3 py-2 text-xs text-foreground-muted">
-                Demo mode — sending is simulated. The messages appear in your
-                inbox.
+                Demo mode — sending is simulated. The messages appear in your inbox.
               </p>
             )}
             <p className="flex items-start gap-1.5 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-              In production, owners outside the 24-hour window require an approved
-              WhatsApp template message.
+              In production, recipients outside the 24-hour window require an
+              approved WhatsApp template message.
             </p>
             <button
               onClick={onClose}
@@ -180,12 +182,12 @@ export function OwnerMessageDialog({
             )}
 
             <button
-              onClick={send}
+              onClick={submit}
               disabled={pending || !message.trim()}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
               <Send className="size-4" />
-              {pending ? "Sending…" : `Send to ${count} owner${count === 1 ? "" : "s"}`}
+              {pending ? "Sending…" : `Send to ${label(count)}`}
             </button>
           </div>
         )}

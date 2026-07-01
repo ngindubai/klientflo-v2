@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Upload, FileText, FileWarning, ExternalLink } from "lucide-react";
+import { Upload, FileText, FileWarning } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { DeleteDocButton } from "@/components/documents/delete-doc-button";
+import { DocPreviewButton } from "@/components/documents/document-preview";
 import { DocumentFilters } from "@/components/documents/document-filters";
 import { getDocuments, getMissingDocuments } from "@/server/documents";
 import { humanizeEnum, DOCUMENT_CATEGORIES } from "@/lib/constants";
@@ -138,15 +139,7 @@ export default async function DocumentsPage({
                           </span>
                         )}
                         {d.fileUrl && (
-                          <a
-                            href={d.fileUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="shrink-0 rounded-md p-1.5 text-foreground-muted hover:bg-surface-muted hover:text-foreground"
-                            aria-label="Preview"
-                          >
-                            <ExternalLink className="size-4" />
-                          </a>
+                          <DocPreviewButton name={d.name} fileUrl={d.fileUrl} />
                         )}
                         <DeleteDocButton id={d.id} />
                       </li>
