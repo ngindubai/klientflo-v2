@@ -11,18 +11,52 @@ export const APP_NAME = "KlientFlo";
 export const APP_TAGLINE = "Client workflows, simplified.";
 
 // --- Navigation ----------------------------------------------------------
+// Workflow-first information architecture (command-center model, not a CRM of
+// record screens). Primary surfaces are the daily flow; secondary records live
+// under Admin. Hrefs stay stable so deep links and the AI command bar keep
+// working. NAV_ITEMS is the flat list (used by the command bar); NAV_GROUPS is
+// what the sidebar renders.
 
+export const NAV_GROUPS = [
+  {
+    label: null,
+    items: [
+      { label: "Command Center", href: "/dashboard", icon: "dashboard" },
+      { label: "Conversations", href: "/inbox", icon: "inbox" },
+      { label: "Opportunities", href: "/opportunities", icon: "pipeline" },
+      { label: "Viewings", href: "/calendar", icon: "calendar" },
+      { label: "Properties", href: "/properties", icon: "properties" },
+      { label: "Intelligence", href: "/reports", icon: "reports" },
+    ],
+  },
+  {
+    label: "Admin",
+    items: [
+      { label: "Clients", href: "/clients", icon: "clients" },
+      { label: "Agents", href: "/agents", icon: "agents" },
+      { label: "Investors", href: "/investors", icon: "investors" },
+      { label: "Owners", href: "/owners", icon: "owners" },
+      { label: "Documents", href: "/documents", icon: "documents" },
+      { label: "Storage", href: "/storage", icon: "storage" },
+      { label: "Settings", href: "/settings", icon: "settings" },
+    ],
+  },
+] as const;
+
+// Flat list for the AI command bar's open_page routing (labels are what the
+// AI matches, so keep human-friendly aliases here).
 export const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
-  { label: "WhatsApp Inbox", href: "/inbox", icon: "inbox" },
+  { label: "Command Center", href: "/dashboard", icon: "dashboard" },
+  { label: "Conversations", href: "/inbox", icon: "inbox" },
+  { label: "Opportunities", href: "/opportunities", icon: "pipeline" },
+  { label: "Pipeline", href: "/pipeline", icon: "pipeline" },
+  { label: "Viewings", href: "/calendar", icon: "calendar" },
   { label: "Clients", href: "/clients", icon: "clients" },
   { label: "Agents", href: "/agents", icon: "agents" },
   { label: "Investors", href: "/investors", icon: "investors" },
   { label: "Properties", href: "/properties", icon: "properties" },
   { label: "Owners", href: "/owners", icon: "owners" },
-  { label: "Pipeline", href: "/pipeline", icon: "pipeline" },
-  { label: "Reports", href: "/reports", icon: "reports" },
-  { label: "Calendar", href: "/calendar", icon: "calendar" },
+  { label: "Intelligence", href: "/reports", icon: "reports" },
   { label: "Documents", href: "/documents", icon: "documents" },
   { label: "Storage", href: "/storage", icon: "storage" },
   { label: "Settings", href: "/settings", icon: "settings" },

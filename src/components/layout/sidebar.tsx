@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, LogOut } from "lucide-react";
-import { NAV_ITEMS } from "@/lib/constants";
+import { NAV_GROUPS } from "@/lib/constants";
 import { NavIcon } from "@/components/nav-icon";
 import { BrandLogo } from "@/components/brand-logo";
 import { logout } from "@/server/auth";
@@ -58,27 +58,37 @@ export function Sidebar({
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 space-y-1 px-3 py-2">
-          {NAV_ITEMS.map((item) => {
-            const active =
-              pathname === item.href || pathname.startsWith(item.href + "/");
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-primary-muted text-primary"
-                    : "text-foreground-muted hover:bg-surface-muted hover:text-foreground",
-                )}
-              >
-                <NavIcon name={item.icon} className="size-5 shrink-0" />
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-2">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={group.label ?? `group-${gi}`} className="space-y-1">
+              {group.label && (
+                <p className="px-3 pb-1 pt-2 text-[0.65rem] font-semibold uppercase tracking-wider text-foreground-muted/70">
+                  {group.label}
+                </p>
+              )}
+              {group.items.map((item) => {
+                const active =
+                  pathname === item.href ||
+                  pathname.startsWith(item.href + "/");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onClose}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-primary-muted text-primary"
+                        : "text-foreground-muted hover:bg-surface-muted hover:text-foreground",
+                    )}
+                  >
+                    <NavIcon name={item.icon} className="size-5 shrink-0" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Agent footer */}

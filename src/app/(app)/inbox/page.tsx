@@ -50,7 +50,7 @@ export default async function InboxPage({
   return (
     <div className="flex h-[calc(100dvh-7rem)] flex-col">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">WhatsApp Inbox</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Conversations</h1>
         <div className="flex items-center gap-2">
           <SimulateInboundButton />
           {!isWhatsAppConfigured() && (
