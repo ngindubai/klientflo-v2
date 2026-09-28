@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">KlientFlo mark</title>
+  <desc id="desc">Abstract flowing wave icon for KlientFlo.</desc>
+  
+    <defs>
+      <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#69CFFF"/>
+        <stop offset="48%" stop-color="#2BA8F3"/>
+        <stop offset="100%" stop-color="#1489E6"/>
+      </linearGradient>
+    </defs>
+    
+  
+    <g id="klientflo-mark" transform="translate(46 126)">
+      <path d="M 45 70 C 82 36 119 45 150 68 C 181 91 211 91 245 54" fill="none" stroke="url(#waveGradient)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 45 130 C 82 94 119 106 150 130 C 181 155 213 154 245 117" fill="none" stroke="url(#waveGradient)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 45 190 C 82 153 119 162 150 188 C 181 214 213 212 245 176" fill="none" stroke="url(#waveGradient)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 255 132 C 284 92 306 58 370 55" fill="none" stroke="url(#waveGradient)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 255 138 C 284 179 308 205 370 208" fill="none" stroke="url(#waveGradient)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+</svg>
