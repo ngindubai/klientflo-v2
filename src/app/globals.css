@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /*
  * KlientFlo design tokens — brand pack v1.
@@ -8,17 +9,17 @@
  */
 :root {
   /* Brand palette (v1) */
-  --kf-blue: #108bff;
-  --kf-blue-hover: #3ba7fe;
+  --kf-blue: #0967ce;
+  --kf-blue-hover: #0755ac;
   --kf-sky: #65c1ff;
   --kf-navy: #06121f;
   --kf-carbon: #010407;
   --kf-ink: #0f172a;
   --kf-slate: #475569;
   --kf-slate-soft: #94a3b8;
-  --kf-surface-soft: #f7fbff;
-  --kf-surface-tint: #eaf6ff;
-  --kf-shadow-card: 0 18px 45px rgba(6, 18, 31, 0.08);
+  --kf-surface-soft: #f5f7fb;
+  --kf-surface-tint: #edf5ff;
+  --kf-shadow-card: 0 2px 8px rgba(6, 18, 31, 0.025);
   --kf-shadow-focus: 0 0 0 4px rgba(16, 139, 255, 0.22);
   --kf-gradient-surface: linear-gradient(135deg, var(--kf-carbon), var(--kf-navy) 45%, var(--kf-blue));
 
@@ -27,7 +28,7 @@
   --surface-muted: var(--kf-surface-tint);
   --foreground: var(--kf-ink);
   --foreground-muted: var(--kf-slate);
-  --border: #dcecf8;
+  --border: #e2e8f0;
 
   --primary: var(--kf-blue);
   --primary-hover: var(--kf-blue-hover);
@@ -35,7 +36,7 @@
   --primary-muted: var(--kf-surface-tint);
 
   /* Success / positive accent (kept green for semantic clarity) */
-  --accent: #10b981;
+  --accent: #087957;
   --accent-foreground: #ffffff;
   --accent-muted: #ecfdf5;
 
@@ -46,7 +47,8 @@
   --urgency-4: #ea580c;
   --urgency-5: #ef4444;
 
-  --radius: 1.25rem;
+  --radius: 0.75rem;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -90,27 +92,9 @@
   box-shadow: var(--kf-shadow-card);
 }
 
-/* Dark theme tokens — brand navy/carbon canvas with sky-blue primary. */
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --background: var(--kf-carbon);
-    --surface: var(--kf-navy);
-    --surface-muted: #0e2238;
-    --foreground: #eaf2fb;
-    --foreground-muted: #8aa0b8;
-    --border: #16314c;
-    --primary: #3ba7fe;
-    --primary-hover: #65c1ff;
-    --primary-foreground: #04101f;
-    --primary-muted: #0f2c47;
-    --accent: #34d399;
-    --accent-foreground: #04130c;
-    --accent-muted: #0c241a;
-  }
-}
-
 /* Explicit dark theme (toggle), overrides system preference. */
 :root.dark {
+  color-scheme: dark;
   --background: var(--kf-carbon);
   --surface: var(--kf-navy);
   --surface-muted: #0e2238;
@@ -153,7 +137,34 @@ h1, h2, h3, .font-display {
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: none;
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+/* Keep dense workspaces bounded; only their content panes scroll. */
+.kf-inbox { height: 100%; min-height: 0; display: flex; flex-direction: column; }
+.kf-inbox-grid { display: grid; grid-template-columns: minmax(0,1fr); flex: 1; min-height: 0; }
+.kf-inbox-list { min-width: 0; min-height: 0; flex-direction: column; }
+.kf-thread { height: 100%; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+.kf-thread-messages { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; }
+.kf-thread-messages > * { flex-shrink: 0; }
+.kf-reply { flex-shrink: 0; padding-bottom: max(.6rem, env(safe-area-inset-bottom)); }
+.kf-workspace-tabs { display: flex; flex-wrap: wrap; gap: .25rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; padding-bottom: .5rem; }
+.kf-workspace-tabs a { padding: .45rem .65rem; border-radius: .4rem; font-size: .8rem; color: var(--foreground-muted); }
+.kf-workspace-tabs a[aria-current="page"] { background: var(--primary-muted); color: var(--primary); font-weight: 600; }
+.kf-modal { width: min(42rem,calc(100% - 1.5rem)); max-height: calc(100dvh - 2rem); margin: auto; padding: 1.25rem; overflow-y: auto; border: 1px solid var(--border); border-radius: .9rem; background: var(--surface); color: var(--foreground); box-shadow: 0 24px 80px #06121f33; }
+.kf-modal::backdrop { background: #06121f80; }
+.kf-modal-body { min-height: 0; overflow-y: auto; padding: 1rem; max-height: calc(100dvh - 12rem); }
+@media (min-width: 768px) {
+  .kf-inbox-grid { grid-template-columns: minmax(245px,31%) minmax(0,1fr); }
+}
+@media (min-width: 1280px) {
+  .kf-inbox-grid { grid-template-columns: 320px minmax(0,1fr); }
+}
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]), textarea, select { font-size: 16px; }
+  .kf-calendar-cell { min-height: 76px; }
+  .kf-calendar-cell .kf-event-chip { padding: 2px; font-size: 10px; }
 }
 
 /* Respect reduced-motion preferences for the loading/pulse animations. */
@@ -165,4 +176,27 @@ select:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+@media (max-width: 1023px) {
+  .kf-contacts-table th:nth-child(5), .kf-contacts-table td:nth-child(5) { display: none; }
+}
+@media (max-width: 767px) {
+  .kf-contacts-table { table-layout: fixed; }
+  .kf-contacts-table th:nth-child(3), .kf-contacts-table td:nth-child(3),
+  .kf-contacts-table th:nth-child(4), .kf-contacts-table td:nth-child(4) { display: none; }
+  .kf-contacts-table th:last-child, .kf-contacts-table td:last-child { width: 84px; }
+}
+
+.kf-conversation-row { padding-top: .5rem; padding-bottom: .5rem; line-height: 1.2; }
+.kf-conversation-row > div:nth-child(2) { line-height: 1.2; }
+.kf-conversation-row > div:nth-child(2) span { line-height: 1.2; }
+.kf-conversation-row { padding-top: 6px; padding-bottom: 6px; }
+.kf-conversation-row > div:first-child, .kf-conversation-row > div:first-child span { line-height: 18px; }
+.kf-conversation-row > div:nth-child(2) { margin-top: 2px; margin-bottom: 2px; }
+.kf-conversation-row > div:nth-child(2) span { padding-top: 1px; padding-bottom: 1px; }
+.kf-conversation-row > p { font-size: 11px; line-height: 14px; }
+@media (max-width: 1023px) {
+  .kf-owners-table { table-layout: fixed; }
+  .kf-owners-table th:nth-child(n+3):nth-child(-n+6), .kf-owners-table td:nth-child(n+3):nth-child(-n+6) { display: none; }
+  .kf-owners-table th:last-child, .kf-owners-table td:last-child { width: 84px; }
 }

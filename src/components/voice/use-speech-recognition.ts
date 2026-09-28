@@ -16,7 +16,7 @@ type SpeechRecognitionLike = {
   stop: () => void;
   onresult: ((e: SREvent) => void) | null;
   onend: (() => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
 };
 type SRCtor = new () => SpeechRecognitionLike;
 
@@ -35,6 +35,7 @@ function getCtor(): SRCtor | null {
  */
 export function useSpeechRecognition(onUpdate: (text: string) => void) {
   const [supported, setSupported] = useState(false);
+  const [error, setError] = useState("");
   const [listening, setListening] = useState(false);
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const baseRef = useRef("");
@@ -55,7 +56,9 @@ export function useSpeechRecognition(onUpdate: (text: string) => void) {
   const start = useCallback(
     (base = "") => {
       const Ctor = getCtor();
-      if (!Ctor) return;
+      if (!Ctor) { setError("Speech recognition is not supported in this browser. Please use Chrome or type your message."); return; }
+      setError("");
+      recRef.current?.stop();
       const rec = new Ctor();
       rec.lang = "en-US";
       rec.continuous = true;
@@ -73,11 +76,10 @@ export function useSpeechRecognition(onUpdate: (text: string) => void) {
         onUpdate((baseRef.current + finalRef.current + interim).trimStart());
       };
       rec.onend = () => setListening(false);
-      rec.onerror = () => setListening(false);
+      rec.onerror = (event) => { setListening(false); setError(event.error === "not-allowed" ? "Microphone permission was denied. Allow microphone access in your browser to dictate." : "Dictation stopped. Check your microphone and try again."); };
 
       recRef.current = rec;
-      rec.start();
-      setListening(true);
+      try { rec.start(); setListening(true); } catch { setListening(false); setError("Unable to start dictation. Please try again."); }
     },
     [onUpdate],
   );
@@ -90,5 +92,5 @@ export function useSpeechRecognition(onUpdate: (text: string) => void) {
     [listening, start, stop],
   );
 
-  return { supported, listening, start, stop, toggle };
+  return { supported, listening, error, clearError: () => setError(""), start, stop, toggle };
 }

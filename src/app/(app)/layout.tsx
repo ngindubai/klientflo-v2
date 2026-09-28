@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { getCurrentAgent } from "@/server/agent";
+import { isWhatsAppConfigured } from "@/server/whatsapp";
 
 // The authenticated section is always server-rendered: it depends on the
 // session + database on every request, so nothing here should be statically
@@ -15,5 +16,5 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const agent = await getCurrentAgent();
-  return <AppShell agentName={agent.name}>{children}</AppShell>;
+  return <AppShell agentName={agent.name} demo={!isWhatsAppConfigured()}>{children}</AppShell>;
 }

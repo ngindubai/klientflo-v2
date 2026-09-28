@@ -1,7 +1,8 @@
 "use client";
 
+import { Modal } from "@/components/ui/modal";
 import { useState, useTransition } from "react";
-import { Trash2, Send, Copy, Check, X, Loader2 } from "lucide-react";
+import { Trash2, Send, Copy, Check, Loader2 } from "lucide-react";
 import { deleteEvent, generateEventInvite } from "@/server/event-actions";
 
 export function EventEditActions({ id }: { id: string }) {
@@ -32,26 +33,9 @@ export function EventEditActions({ id }: { id: string }) {
       </button>
 
       {invite && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={() => setInvite(null)}
-        >
-          <div
-            className="w-full max-w-md rounded-[var(--radius-card)] border border-border bg-surface shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <h2 className="text-sm font-semibold">WhatsApp invite</h2>
-              <button
-                onClick={() => setInvite(null)}
-                className="rounded p-1 text-foreground-muted hover:bg-surface-muted"
-                aria-label="Close"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
+        <Modal title="WhatsApp invite" onClose={() => setInvite(null)}>
             <div className="p-4">
-              <pre className="whitespace-pre-wrap rounded-lg bg-accent-muted p-3 font-sans text-sm">
+              <pre className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] rounded-lg bg-accent-muted p-3 font-sans text-sm">
                 {invite}
               </pre>
               <div className="mt-3 flex items-center gap-2">
@@ -67,12 +51,11 @@ export function EventEditActions({ id }: { id: string }) {
                   {copied ? "Copied" : "Copy"}
                 </button>
                 <span className="text-xs text-foreground-muted">
-                  One-click send arrives in Chunk 12.
+                  Copy this invite into the conversation to review and send.
                 </span>
               </div>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

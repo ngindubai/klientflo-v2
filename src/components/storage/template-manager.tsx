@@ -148,7 +148,8 @@ function PdfPreview({
       <select
         value={propertyId}
         onChange={(e) => setPropertyId(e.target.value)}
-        className="rounded-lg border border-border bg-surface px-2 py-1.5 text-xs outline-none"
+        aria-label="Property for PDF preview"
+        className="max-w-full min-w-0 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs outline-none"
       >
         <option value="">Choose property…</option>
         {properties.map((p) => (
@@ -249,6 +250,7 @@ function TemplateEditor({
           </label>
           <input
             className={inputClass}
+            aria-label="Template name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="2-bed brochure"
@@ -260,6 +262,7 @@ function TemplateEditor({
           </label>
           <select
             className={inputClass}
+            aria-label="Template kind"
             value={kind}
             onChange={(e) => setKind(e.target.value)}
           >
@@ -290,6 +293,7 @@ function TemplateEditor({
           ))}
         </div>
         <textarea
+          aria-label="Template body"
           ref={bodyRef}
           rows={10}
           className={inputClass}

@@ -1,11 +1,12 @@
+import { priorityWhere } from "@/server/inbox-query";
+import { dubaiDateKey } from "@/lib/dubai-time";
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
 
 function todayRange() {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const end = new Date();
-  end.setHours(23, 59, 59, 999);
+  const key = dubaiDateKey(new Date());
+  const start = new Date(`${key}T00:00:00+04:00`);
+  const end = new Date(`${key}T23:59:59.999+04:00`);
   return { start, end };
 }
 
@@ -35,7 +36,7 @@ export async function getDashboardData() {
   ] = await Promise.all([
     // Urgent messages — urgency 4–5, most pressing first.
     prisma.conversation.findMany({
-      where: { agentId, urgency: { gte: 4 } },
+      where: { agentId, ...priorityWhere("high") },
       orderBy: [{ urgency: "desc" }, { lastMessageAt: "desc" }],
       take: 6,
       include: { client: true },
@@ -109,7 +110,7 @@ export async function getDashboardData() {
     }),
     // Headline counts for the stat row.
     Promise.all([
-      prisma.conversation.count({ where: { agentId, urgency: { gte: 4 } } }),
+      prisma.conversation.count({ where: { agentId, ...priorityWhere("high") } }),
       prisma.conversation.count({ where: { agentId, awaitingReply: true } }),
       prisma.suggestedAction.count({ where: { agentId, status: "pending" } }),
       prisma.message.count({

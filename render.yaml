@@ -20,7 +20,7 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    branch: claude/great-carson-8mjbfm
+    branch: feature/command-center
     healthCheckPath: /api/health
     # --prod=false installs dev tooling (prisma, typescript, tailwind) for the
     # build; postinstall runs `prisma generate`.

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { X, Send, Sparkles, Mic, AlertTriangle } from "lucide-react";
+import { Send, Sparkles, Mic, AlertTriangle } from "lucide-react";
 import { useSpeechRecognition } from "@/components/voice/use-speech-recognition";
 import type { MessageTemplate } from "@/server/settings";
+import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
 
 export type SendResult = { sent: number; failed: number; demo: boolean };
@@ -64,23 +65,11 @@ export function RecipientMessageDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-semibold">Message {label(count)}</h2>
-          <button
-            onClick={onClose}
-            className="rounded-md p-1 text-foreground-muted hover:bg-surface-muted"
-            aria-label="Close"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-
+    <Modal title={`Message ${label(count)}`} onClose={onClose}>
         {result ? (
           <div className="space-y-3 text-sm">
             <p>
-              Sent to <strong>{result.sent}</strong>
+              {result.demo ? "Simulated for" : "Sent to"} <strong>{result.sent}</strong>
               {result.failed > 0 ? `, ${result.failed} skipped (no phone)` : ""}.
             </p>
             {result.demo && (
@@ -129,10 +118,11 @@ export function RecipientMessageDialog({
               </p>
               <div className="flex gap-1.5">
                 <input
+                  aria-label="Message brief"
                   value={brief}
                   onChange={(e) => setBrief(e.target.value)}
                   placeholder="e.g. buyer ready at 2.5M for a 2-bed"
-                  className={inputClass}
+                  className={`${inputClass} min-w-0`}
                 />
                 <button
                   type="button"
@@ -167,17 +157,18 @@ export function RecipientMessageDialog({
                 )}
               </div>
               <textarea
+                aria-label="Message to selected contacts"
                 rows={5}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Write a message, pick a preset, dictate, or generate one…"
-                className={inputClass}
+                className={`${inputClass} min-w-0`}
               />
             </div>
 
-            {error && (
+            {(error || speech.error) && (
               <p className="rounded-lg bg-urgency-5/10 px-3 py-2 text-sm text-urgency-5">
-                {error}
+                {error || speech.error}
               </p>
             )}
 
@@ -191,7 +182,6 @@ export function RecipientMessageDialog({
             </button>
           </div>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }

@@ -1,19 +1,20 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { FileAudio, Loader2 } from "lucide-react";
 import { transcribeVoiceNote } from "@/server/voice-actions";
 
 export function TranscribeButton({ messageId }: { messageId: string }) {
+  const [error, setError] = useState("");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   return (
-    <button
+    <span><button
       onClick={() =>
         startTransition(async () => {
-          await transcribeVoiceNote(messageId);
-          router.refresh();
+          setError("");
+          try { const result = await transcribeVoiceNote(messageId); if (result.error) setError(result.error); else router.refresh(); } catch (err) { setError(err instanceof Error ? err.message : "Transcription unavailable. Please try again."); }
         })
       }
       disabled={isPending}
@@ -21,6 +22,6 @@ export function TranscribeButton({ messageId }: { messageId: string }) {
     >
       {isPending ? <Loader2 className="size-3 animate-spin" /> : <FileAudio className="size-3" />}
       Transcribe
-    </button>
+    </button>{error && <span role="status" className="mt-1 block text-xs">{error}</span>}</span>
   );
 }

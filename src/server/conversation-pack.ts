@@ -1,5 +1,7 @@
 "use server";
 
+import { resolveMergeFields } from "@/server/pdf/merge";
+import { formatAED } from "@/lib/utils";
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
 import { sendBulkPdf, type BulkSendResult } from "@/server/bulk-send";
@@ -58,4 +60,17 @@ export async function sendPackToConversation(input: {
     contactIds: [contactId],
     caption: input.caption,
   });
+}
+
+/** Readable pack contents for browsers that cannot embed a PDF viewer. */
+export async function previewConversationPack(templateId: string, propertyId: string) {
+  const agent = await getCurrentAgent();
+  const [template, property] = await Promise.all([
+    prisma.template.findFirst({ where: { id: templateId, agentId: agent.id } }),
+    prisma.property.findFirst({ where: { id: propertyId, agentId: agent.id } }),
+  ]);
+  if (!template || !property) return { error: "Choose an available template and property." };
+  return { title: property.title, price: formatAED(property.price), area: property.area,
+    specs: [property.bedrooms != null ? `${property.bedrooms} beds` : null, property.bathrooms != null ? `${property.bathrooms} baths` : null, property.sizeSqft != null ? `${property.sizeSqft.toLocaleString()} sqft` : null, property.propertyType].filter(Boolean).join(" · "),
+    body: resolveMergeFields(template.body, property, agent), agentName: agent.name };
 }

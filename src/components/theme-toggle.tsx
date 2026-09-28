@@ -9,10 +9,7 @@ export function ThemeToggle() {
 
   useEffect(() => {
     // Read the active theme after mount (avoids SSR/client mismatch).
-    const stored = localStorage.getItem("theme");
-    const dark =
-      stored === "dark" ||
-      (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    const dark = document.documentElement.classList.contains("dark");
     /* eslint-disable react-hooks/set-state-in-effect */
     setIsDark(dark);
     setMounted(true);
@@ -25,13 +22,13 @@ export function ThemeToggle() {
     setIsDark(next);
     d.classList.toggle("dark", next);
     d.classList.toggle("light", !next);
-    localStorage.setItem("theme", next ? "dark" : "light");
+    try { localStorage.setItem("theme", next ? "dark" : "light"); } catch { /* Private browsing may disable storage. */ }
   }
 
   return (
     <button
       onClick={toggle}
-      className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+      className="shrink-0 rounded-lg p-2 text-foreground-muted transition-colors hover:bg-surface-muted hover:text-foreground"
       aria-label="Toggle theme"
       title="Toggle light / dark"
     >

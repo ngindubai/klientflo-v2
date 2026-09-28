@@ -85,9 +85,9 @@ export async function ContactsSection({
           {query || area ? "No matches for these filters." : config.emptyText}
         </Card>
       ) : variant === "table" ? (
-        <Card className="p-4">
+        <Card className="p-2 md:p-4">
           <ContactsTable
-            category={config.category === "agent" ? "agent" : "investor"}
+            category={config.category === "agent" ? "agent" : config.category === "investor" ? "investor" : "client"}
             templates={templates}
             contacts={contacts.map((c) => ({
               id: c.id,
@@ -97,6 +97,8 @@ export async function ContactsSection({
               budgetMax: c.budgetMax,
               agencyName: c.agencyName,
               notes: c.notes,
+              clientType: c.clientType,
+              status: c.status,
             }))}
           />
         </Card>

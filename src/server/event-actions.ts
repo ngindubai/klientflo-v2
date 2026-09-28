@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDubaiDateTime, validateEventTimes, WORKSPACE_TIME_ZONE } from "@/lib/dubai-time";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -35,12 +36,14 @@ function buildData(input: EventInput) {
   const type = (EVENT_TYPES as readonly string[]).includes(input.type)
     ? (input.type as EventType)
     : "viewing";
-  const startsAt = new Date(input.startsAt);
+  const startsAt = parseDubaiDateTime(input.startsAt);
   if (Number.isNaN(startsAt.getTime())) throw new Error("Invalid start time.");
   const endsAt = input.endsAt?.trim()
-    ? new Date(input.endsAt)
+    ? parseDubaiDateTime(input.endsAt)
     : new Date(startsAt.getTime() + (DEFAULT_DURATION[type] ?? 60) * 60_000);
 
+  validateEventTimes(startsAt, endsAt);
+  if (!input.title.trim()) throw new Error("A title is required.");
   return {
     type,
     title: input.title.trim(),
@@ -91,11 +94,13 @@ export async function generateEventInvite(id: string): Promise<string> {
   if (!event) throw new Error("Event not found.");
 
   const date = event.startsAt.toLocaleDateString("en-GB", {
+    timeZone: WORKSPACE_TIME_ZONE,
     weekday: "long",
     day: "numeric",
     month: "long",
   });
   const time = event.startsAt.toLocaleTimeString("en-GB", {
+    timeZone: WORKSPACE_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -103,7 +108,7 @@ export async function generateEventInvite(id: string): Promise<string> {
   const lines = [
     `Hi${event.client ? ` ${event.client.name.split(" ")[0]}` : ""},`,
     "",
-    `Confirming your ${humanizeEnum(event.type).toLowerCase()} on ${date} at ${time}.`,
+    `Confirming your ${humanizeEnum(event.type).toLowerCase()} on ${date} at ${time} (Dubai time).`,
   ];
   if (event.property) lines.push(`Property: ${event.property.title}`);
   if (event.location) lines.push(`Location: ${event.location}`);

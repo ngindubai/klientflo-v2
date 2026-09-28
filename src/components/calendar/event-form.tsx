@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { parseDubaiDateTime, validateEventTimes } from "@/lib/dubai-time";
 import { useRouter } from "next/navigation";
 import { EVENT_TYPES, humanizeEnum } from "@/lib/constants";
 import {
@@ -46,13 +47,19 @@ export function EventForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    const values = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
+    const submitted: EventInput = { ...form, ...values };
+    try {
+      const start = parseDubaiDateTime(submitted.startsAt);
+      if (submitted.endsAt) validateEventTimes(start, parseDubaiDateTime(submitted.endsAt));
+    } catch (err) { setError(err instanceof Error ? err.message : "Check the event dates."); return; }
     startTransition(async () => {
       try {
-        if (mode === "create") await createEvent(form);
-        else await updateEvent(id!, form);
+        if (mode === "create") await createEvent(submitted);
+        else await updateEvent(id!, submitted);
       } catch (err) {
         if (
           err &&
@@ -71,34 +78,35 @@ export function EventForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Type">
-          <select className={inputClass} value={form.type} onChange={set("type")}>
+          <select className={inputClass} name="type" value={form.type} onChange={set("type")}>
             {EVENT_TYPES.map((t) => (
               <option key={t} value={t}>{humanizeEnum(t)}</option>
             ))}
           </select>
         </Field>
         <Field label="Title *">
-          <input required className={inputClass} value={form.title} onChange={set("title")} />
+          <input required className={inputClass} name="title" value={form.title} onChange={set("title")} />
         </Field>
-        <Field label="Starts *">
+        <Field label="Starts · Dubai time *">
           <input
             required
             type="datetime-local"
             className={inputClass}
-            value={form.startsAt}
+            name="startsAt" defaultValue={form.startsAt}
             onChange={set("startsAt")}
           />
         </Field>
-        <Field label="Ends">
+        <Field label="Ends · Dubai time">
           <input
             type="datetime-local"
             className={inputClass}
-            value={form.endsAt}
+            min={form.startsAt}
+            name="endsAt" defaultValue={form.endsAt}
             onChange={set("endsAt")}
           />
         </Field>
         <Field label="Client">
-          <select className={inputClass} value={form.clientId} onChange={set("clientId")}>
+          <select className={inputClass} name="clientId" value={form.clientId} onChange={set("clientId")}>
             <option value="">—</option>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -106,7 +114,7 @@ export function EventForm({
           </select>
         </Field>
         <Field label="Property">
-          <select className={inputClass} value={form.propertyId} onChange={set("propertyId")}>
+          <select className={inputClass} name="propertyId" value={form.propertyId} onChange={set("propertyId")}>
             <option value="">—</option>
             {properties.map((p) => (
               <option key={p.id} value={p.id}>{p.title}</option>
@@ -114,15 +122,15 @@ export function EventForm({
           </select>
         </Field>
         <Field label="Location" full>
-          <input className={inputClass} value={form.location} onChange={set("location")} />
+          <input className={inputClass} name="location" value={form.location} onChange={set("location")} />
         </Field>
         <Field label="Notes" full>
-          <textarea className={inputClass} rows={2} value={form.notes} onChange={set("notes")} />
+          <textarea className={inputClass} rows={2} name="notes" value={form.notes} onChange={set("notes")} />
         </Field>
       </div>
 
       {error && (
-        <p className="rounded-lg bg-urgency-5/10 px-3 py-2 text-sm text-urgency-5">{error}</p>
+        <p role="alert" className="rounded-lg bg-urgency-5/10 px-3 py-2 text-sm text-urgency-5">{error}</p>
       )}
 
       <div className="flex gap-3">
@@ -155,9 +163,9 @@ function Field({
   full?: boolean;
 }) {
   return (
-    <div className={full ? "sm:col-span-2" : undefined}>
-      <label className={labelClass}>{label}</label>
+    <label className={full ? "block sm:col-span-2" : "block"}>
+      <span className={labelClass}>{label}</span>
       {children}
-    </div>
+    </label>
   );
 }

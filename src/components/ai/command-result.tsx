@@ -41,7 +41,7 @@ function ResultBody({ result }: { result: CommandResult }) {
       return (
         <List>
           {result.clients.map((c) => (
-            <Row key={c.id} href="/clients" title={c.name} subtitle={c.subtitle} />
+            <Row key={c.id} href={`/clients/${c.id}`} title={c.name} subtitle={c.subtitle} />
           ))}
         </List>
       );
@@ -52,7 +52,7 @@ function ResultBody({ result }: { result: CommandResult }) {
           {result.properties.map((p) => (
             <Row
               key={p.id}
-              href="/properties"
+              href={`/properties/${p.id}`}
               title={p.title}
               subtitle={[
                 p.bedrooms ? `${p.bedrooms} bed` : null,
@@ -72,7 +72,7 @@ function ResultBody({ result }: { result: CommandResult }) {
           {result.conversations.map((c) => (
             <Row
               key={c.id}
-              href="/inbox"
+              href={`/inbox?c=${c.id}`}
               title={c.name}
               subtitle={c.summary}
               badge={<UrgencyBadge level={c.urgency} />}
@@ -87,7 +87,7 @@ function ResultBody({ result }: { result: CommandResult }) {
           {result.events.map((e) => (
             <Row
               key={e.id}
-              href="/calendar"
+              href={`/calendar/${e.id}/edit`}
               title={e.title}
               subtitle={e.type}
               meta={e.time}
@@ -176,7 +176,7 @@ function DraftCard({
           {copied ? "Copied" : "Copy"}
         </button>
         <span className="text-xs text-foreground-muted">
-          Sending via WhatsApp arrives in Chunk 12.
+          Review and paste this draft into the conversation before sending.
         </span>
       </div>
     </div>

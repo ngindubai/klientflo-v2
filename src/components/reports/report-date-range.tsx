@@ -24,10 +24,10 @@ export function ReportDateRange({
   }
 
   const inputClass =
-    "h-9 rounded-lg border border-border bg-surface px-2 text-sm outline-none focus:border-primary";
+    "h-9 min-w-0 max-w-full rounded-lg border border-border bg-surface px-2 text-sm outline-none focus:border-primary";
 
   return (
-    <div className="flex items-center gap-1.5 rounded-lg border border-border px-2 py-1">
+    <div className="flex max-w-full flex-wrap items-center gap-1.5 rounded-lg border border-border px-2 py-1">
       <CalendarDays className="size-4 text-foreground-muted" />
       <input
         type="date"
@@ -48,7 +48,7 @@ export function ReportDateRange({
       />
       <button
         onClick={apply}
-        disabled={!f && !t}
+        disabled={(!f && !t) || Boolean(f && t && f > t)}
         className="rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
       >
         Apply

@@ -1,3 +1,4 @@
+import { WORKSPACE_TIME_ZONE } from "./dubai-time";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -32,6 +33,7 @@ export function formatRelativeTime(date: Date | string) {
 export function formatTime(date: Date | string) {
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleTimeString("en-GB", {
+    timeZone: WORKSPACE_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
   });

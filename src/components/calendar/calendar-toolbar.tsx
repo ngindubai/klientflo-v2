@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import {
+  parseDate,
   type CalendarView,
   monthYearLabel,
   step,
@@ -8,6 +9,7 @@ import {
   startOfWeek,
   addDays,
 } from "@/lib/calendar";
+import { DateJump } from "./date-jump";
 import { cn } from "@/lib/utils";
 
 const VIEWS: CalendarView[] = ["month", "week", "day"];
@@ -39,7 +41,7 @@ export function CalendarToolbar({
 }) {
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center rounded-lg border border-border">
           <Link
             href={linkTo(view, step(view, refDate, -1))}
@@ -57,15 +59,16 @@ export function CalendarToolbar({
           </Link>
         </div>
         <Link
-          href={linkTo(view, new Date())}
+          href={linkTo(view, parseDate())}
           className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-surface-muted"
         >
           Today
         </Link>
-        <h2 className="ml-1 text-lg font-semibold">{rangeLabel(view, refDate)}</h2>
+        <h2 className="text-base font-semibold md:ml-1 md:text-lg">{rangeLabel(view, refDate)}</h2>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <DateJump view={view} date={toISODate(refDate)} />
         <div className="flex items-center rounded-lg border border-border p-0.5">
           {VIEWS.map((v) => (
             <Link
@@ -86,7 +89,7 @@ export function CalendarToolbar({
           href={`/calendar/new?date=${toISODate(refDate)}`}
           className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
         >
-          <Plus className="size-4" /> New event
+          <Plus className="size-4" /> New viewing / event
         </Link>
       </div>
     </div>

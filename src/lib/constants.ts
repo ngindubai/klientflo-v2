@@ -21,23 +21,19 @@ export const NAV_GROUPS = [
   {
     label: null,
     items: [
-      { label: "Command Center", href: "/dashboard", icon: "dashboard" },
+      { label: "Today", href: "/dashboard", icon: "dashboard" },
       { label: "Conversations", href: "/inbox", icon: "inbox" },
-      { label: "Opportunities", href: "/opportunities", icon: "pipeline" },
+      { label: "Deals", href: "/opportunities", icon: "pipeline" },
       { label: "Viewings", href: "/calendar", icon: "calendar" },
       { label: "Properties", href: "/properties", icon: "properties" },
-      { label: "Intelligence", href: "/reports", icon: "reports" },
+      { label: "Contacts", href: "/clients", icon: "clients" },
     ],
   },
   {
-    label: "Admin",
+    label: "Workspace",
     items: [
-      { label: "Clients", href: "/clients", icon: "clients" },
-      { label: "Agents", href: "/agents", icon: "agents" },
-      { label: "Investors", href: "/investors", icon: "investors" },
-      { label: "Owners", href: "/owners", icon: "owners" },
-      { label: "Documents", href: "/documents", icon: "documents" },
-      { label: "Storage", href: "/storage", icon: "storage" },
+      { label: "Library", href: "/documents", icon: "documents" },
+      { label: "Reports", href: "/reports", icon: "reports" },
       { label: "Settings", href: "/settings", icon: "settings" },
     ],
   },
@@ -46,6 +42,11 @@ export const NAV_GROUPS = [
 // Flat list for the AI command bar's open_page routing (labels are what the
 // AI matches, so keep human-friendly aliases here).
 export const NAV_ITEMS = [
+  { label: "Today", href: "/dashboard", icon: "dashboard" },
+  { label: "Contacts", href: "/clients", icon: "clients" },
+  { label: "Deals", href: "/opportunities", icon: "pipeline" },
+  { label: "Library", href: "/documents", icon: "documents" },
+  { label: "Reports", href: "/reports", icon: "reports" },
   { label: "Command Center", href: "/dashboard", icon: "dashboard" },
   { label: "Conversations", href: "/inbox", icon: "inbox" },
   { label: "Opportunities", href: "/opportunities", icon: "pipeline" },

@@ -127,7 +127,7 @@ async function deliver(
       aiGenerated: true,
     },
   });
-  if (opts.clearReplyFlag) {
+  if (opts.clearReplyFlag && status !== "failed") {
     await prisma.conversation.update({
       where: { id: conversationId },
       data: { awaitingReply: false },

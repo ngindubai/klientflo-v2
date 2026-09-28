@@ -50,7 +50,7 @@ export default async function OwnersPage({
           No owners yet — upload a CSV to get started.
         </Card>
       ) : (
-        <Card className="p-4">
+        <Card className="p-2 md:p-4">
           <div className="mb-3">
             <OwnerFilters areas={facets.areas} buildings={facets.buildings} />
           </div>

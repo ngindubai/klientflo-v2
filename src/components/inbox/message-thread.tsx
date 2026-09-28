@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mic, ArrowLeft } from "lucide-react";
-import { UrgencyBadge } from "@/components/dashboard/urgency-badge";
+import { conversationPriority, PRIORITY_STYLES, PRIORITY_LABELS } from "@/lib/conversation-priority";
+import { MessageScrollArea } from "./message-scroll-area";
 import { VoiceReviewButton } from "@/components/inbox/voice-review-button";
 import { TranscribeButton } from "@/components/inbox/transcribe-button";
 import { DraftApprovalButtons } from "@/components/inbox/draft-approval-buttons";
@@ -18,6 +19,7 @@ type Message = {
   type: string;
   body: string | null;
   transcription: string | null;
+  mediaUrl?: string | null;
   reviewed: boolean;
   status: string;
   aiGenerated: boolean;
@@ -40,7 +42,9 @@ export function MessageThread({
   conversation,
   templates,
   properties,
+  backHref, demo,
 }: {
+  backHref: string; demo: boolean;
   conversation: Conversation;
   templates: { id: string; name: string }[];
   properties: { id: string; title: string }[];
@@ -48,6 +52,7 @@ export function MessageThread({
   const name =
     conversation.client?.name ?? conversation.contactName ?? conversation.contactPhone;
 
+  const priority = conversationPriority(conversation);
   // Show the AI tag suggestion only when it differs from the current tag.
   const currentCategory = conversation.client?.category ?? null;
   const showSuggestion =
@@ -55,23 +60,21 @@ export function MessageThread({
     conversation.categorySuggested !== currentCategory;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="kf-thread flex h-full flex-col">
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-2 border-b border-border p-3">
-        <div className="flex min-w-0 items-start gap-2">
+      <div className="flex shrink-0 flex-wrap items-start justify-between gap-2 border-b border-border p-3">
+        <div className="flex min-w-0 basis-full items-start gap-2 md:basis-auto md:flex-1">
           <Link
-            href="/inbox"
-            className="rounded-md p-1 text-foreground-muted hover:bg-surface-muted lg:hidden"
-            aria-label="Back"
+            href={backHref}
+            className="rounded-md p-1 text-foreground-muted hover:bg-surface-muted md:hidden"
+            aria-label="Back to conversations"
           >
             <ArrowLeft className="size-4" />
           </Link>
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="truncate font-semibold">{name}</span>
-              {conversation.urgency >= 3 && (
-                <UrgencyBadge level={conversation.urgency} />
-              )}
+              <span className={cn("rounded border px-1.5 py-0.5 text-[10px] font-semibold", PRIORITY_STYLES[priority.level])}>{PRIORITY_LABELS[priority.level]} · {priority.reason}</span>
             </div>
             <p className="truncate text-xs text-foreground-muted">
               {conversation.contactPhone}
@@ -82,11 +85,6 @@ export function MessageThread({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <SendPackButton
-            conversationId={conversation.id}
-            templates={templates}
-            properties={properties}
-          />
           <TagSelector
             conversationId={conversation.id}
             category={conversation.client?.category ?? null}
@@ -96,7 +94,7 @@ export function MessageThread({
               href={`/clients/${conversation.client.id}`}
               className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-surface-muted"
             >
-              View client
+              Contact details
             </Link>
           )}
         </div>
@@ -110,14 +108,11 @@ export function MessageThread({
       )}
 
       {conversation.summary && (
-        <p className="border-b border-border bg-primary-muted/40 px-3 py-2 text-xs text-foreground-muted">
-          <span className="font-medium text-primary">AI summary: </span>
-          {conversation.summary}
-        </p>
+        <details className="shrink-0 border-b border-border bg-primary-muted/30 px-3 py-2 text-xs text-foreground-muted"><summary className="cursor-pointer font-medium text-primary">AI summary</summary><p className="mt-1 max-h-24 overflow-y-auto">{conversation.summary}</p></details>
       )}
 
       {/* Messages */}
-      <div className="flex-1 space-y-2 overflow-y-auto p-3">
+      <MessageScrollArea lastId={conversation.messages.at(-1)?.id}>
         {conversation.messages.map((m) => {
           // Pending AI-drafted replies render as an approval card, not a bubble.
           if (m.direction === "outbound" && m.status === "pending" && m.aiGenerated) {
@@ -130,7 +125,7 @@ export function MessageThread({
                   ✨ AI draft — pending your approval
                 </p>
                 <p className="whitespace-pre-wrap text-sm">{m.body}</p>
-                <DraftApprovalButtons messageId={m.id} />
+                <DraftApprovalButtons messageId={m.id} demo={demo} />
               </div>
             );
           }
@@ -155,13 +150,13 @@ export function MessageThread({
                   <span className="flex items-center gap-1 text-xs font-medium opacity-80">
                     <Mic className="size-3" /> Voice note
                   </span>
-                  {m.transcription ? (
+                  {m.transcription && !m.transcription.startsWith("[Voice note") ? (
                     <p className="mt-1 italic">{m.transcription}</p>
                   ) : (
                     <p className="mt-1 italic opacity-70">Not transcribed yet</p>
                   )}
                   <div className="flex flex-wrap items-center gap-2">
-                    {m.direction === "inbound" && !m.transcription && (
+                    {m.direction === "inbound" && (!m.transcription || m.transcription.startsWith("[Voice note")) && (
                       <TranscribeButton messageId={m.id} />
                     )}
                     {m.direction === "inbound" && !m.reviewed && (
@@ -172,7 +167,7 @@ export function MessageThread({
               ) : m.type === "image" ? (
                 <p>📷 Photo{m.body ? ` — ${m.body}` : ""}</p>
               ) : m.type === "document" || m.type === "pdf" ? (
-                <p>📄 Document{m.body ? ` — ${m.body}` : ""}</p>
+                <div><p>📄 Document{m.body ? ` — ${m.body}` : ""}</p>{m.mediaUrl && /^\/api\/(media|files)\//.test(m.mediaUrl) && <a href={m.mediaUrl} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs underline">Open document</a>}</div>
               ) : (
                 <p className="whitespace-pre-wrap">{m.body}</p>
               )}
@@ -191,9 +186,8 @@ export function MessageThread({
           </div>
           );
         })}
-      </div>
-
-      <ReplyComposer conversationId={conversation.id} />
+      </MessageScrollArea>
+      <ReplyComposer conversationId={conversation.id} demo={demo} packAction={<SendPackButton conversationId={conversation.id} templates={templates} properties={properties} recipient={name} demo={demo} />} />
     </div>
   );
 }

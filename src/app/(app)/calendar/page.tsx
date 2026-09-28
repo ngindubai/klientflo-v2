@@ -3,6 +3,7 @@ import { CalendarToolbar } from "@/components/calendar/calendar-toolbar";
 import { MonthView, WeekView, DayView } from "@/components/calendar/views";
 import { getEventsInRange } from "@/server/calendar";
 import {
+  toISODate,
   parseView,
   parseDate,
   viewRange,
@@ -20,13 +21,13 @@ export default async function CalendarPage({
   const view = parseView(viewParam);
   const refDate = parseDate(dateParam);
   const [start, end] = viewRange(view, refDate);
-  const events = await getEventsInRange(start, end);
+  const events = await getEventsInRange(new Date(`${toISODate(start)}T00:00:00+04:00`), new Date(`${toISODate(end)}T23:59:59.999+04:00`));
 
   return (
     <>
       <PageHeader
-        title="Calendar"
-        description="Viewings, meetings, trustee appointments, signings and handovers."
+        title="Viewings & calendar"
+        description="Viewings, meetings, signings and handovers · All times are Dubai (GMT+4)."
       />
       <CalendarToolbar view={view} refDate={refDate} />
       {view === "month" && (

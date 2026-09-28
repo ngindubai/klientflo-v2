@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { TemplateManager } from "@/components/storage/template-manager";
 import { MediaManager } from "@/components/storage/media-manager";
@@ -28,26 +27,9 @@ export default async function StoragePage({
   return (
     <>
       <PageHeader
-        title="Storage"
+        title={active === "templates" ? "Sales pack templates" : active === "floorplans" ? "Floor plans" : "Videos"}
         description="Templates that generate branded PDFs, plus floorplans and videos."
       />
-
-      <div className="mb-4 flex gap-1 border-b border-border">
-        {TABS.map((t) => (
-          <Link
-            key={t.key}
-            href={`/storage?tab=${t.key}`}
-            className={
-              "border-b-2 px-4 py-2 text-sm font-medium " +
-              (t.key === active
-                ? "border-primary text-primary"
-                : "border-transparent text-foreground-muted hover:text-foreground")
-            }
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
 
       {active === "templates" && <TemplatesTab />}
       {active === "floorplans" && <MediaTab type="floorplan" />}

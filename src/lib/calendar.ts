@@ -1,3 +1,4 @@
+import { dubaiDateKey } from "./dubai-time";
 // Pure calendar/date helpers (client + server safe). Weeks start on Monday.
 
 export type CalendarView = "month" | "week" | "day";
@@ -10,9 +11,11 @@ export function parseView(v?: string): CalendarView {
 export function parseDate(s?: string): Date {
   if (s && /^\d{4}-\d{2}-\d{2}$/.test(s)) {
     const [y, m, d] = s.split("-").map(Number);
-    return new Date(y, m - 1, d);
+    const parsed = new Date(y, m - 1, d);
+    if (parsed.getFullYear() === y && parsed.getMonth() === m - 1 && parsed.getDate() === d) return parsed;
   }
-  return startOfDay(new Date());
+  const [y, m, d] = dubaiDateKey(new Date()).split("-").map(Number);
+  return new Date(y, m - 1, d);
 }
 
 export function toISODate(d: Date): string {
@@ -67,7 +70,7 @@ export function isSameDay(a: Date, b: Date): boolean {
 }
 
 export function isToday(d: Date): boolean {
-  return isSameDay(d, new Date());
+  return toISODate(d) === dubaiDateKey(new Date());
 }
 
 /** Weeks (arrays of 7 Dates) covering the full month grid, Monday-aligned. */

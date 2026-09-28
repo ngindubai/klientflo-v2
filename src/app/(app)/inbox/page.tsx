@@ -14,6 +14,7 @@ import {
 import { getTemplates } from "@/server/templates";
 import { getPropertyOptions } from "@/server/properties";
 import { isWhatsAppConfigured } from "@/server/whatsapp";
+import { priorityLevel } from "@/lib/conversation-priority";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -27,16 +28,22 @@ export default async function InboxPage({
     category?: string;
     tag?: string;
     page?: string;
+    q?: string;
+    sort?: string;
+    status?: string;
   }>;
 }) {
-  const { c, priority, category, tag, page } = await searchParams;
-  const minUrgency = priority ? Number(priority) : undefined;
+  const { c, priority, category, tag, page, q, sort, status } = await searchParams;
+  const minUrgency = priority && /^[1-5]$/.test(priority) ? Number(priority) : undefined;
+  const query = Object.fromEntries(Object.entries({ priority, category, tag, page, q, sort, status }).filter((entry): entry is [string, string] => Boolean(entry[1])));
   const filters = {
     minUrgency,
+    priority: priorityLevel(priority),
+    query: q, sort, status,
     category: category || undefined,
     tag: tag || undefined,
   };
-  const currentPage = Number(page) || 1;
+  const currentPage = Number.isFinite(Number(page)) ? Math.max(1, Math.floor(Number(page))) : 1;
   const [conversations, total, active] = await Promise.all([
     getConversations(filters, currentPage),
     getConversationsCount(filters),
@@ -48,9 +55,9 @@ export default async function InboxPage({
     : [[], []];
 
   return (
-    <div className="flex h-[calc(100dvh-7rem)] flex-col">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Conversations</h1>
+    <div className="kf-inbox">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-surface px-3 py-2.5 md:px-4">
+        <h1 className="text-lg font-semibold tracking-tight">Conversations <span className="ml-1 text-xs font-normal text-foreground-muted">{total}</span></h1>
         <div className="flex items-center gap-2">
           <SimulateInboundButton />
           {!isWhatsAppConfigured() && (
@@ -61,11 +68,11 @@ export default async function InboxPage({
         </div>
       </div>
 
-      <Card className="grid flex-1 grid-cols-1 overflow-hidden p-0 lg:grid-cols-[460px_1fr]">
+      <Card className="kf-inbox-grid overflow-hidden rounded-none border-0 p-0 shadow-none">
         {/* Conversation list */}
         <div
           className={cn(
-            "flex-col border-r border-border lg:flex",
+            "kf-inbox-list flex-col border-r border-border md:flex",
             active ? "hidden" : "flex",
           )}
         >
@@ -75,28 +82,27 @@ export default async function InboxPage({
               No conversations match these filters.
             </p>
           ) : (
-            <ConversationList conversations={conversations} activeId={c} />
+            <ConversationList conversations={conversations} activeId={c} query={query} />
           )}
-          <div className="px-3 pb-3">
+          <div className="shrink-0 px-3 pb-2">
             <Pager
               page={currentPage}
               pageSize={CONVERSATIONS_PAGE_SIZE}
               total={total}
               basePath="/inbox"
-              query={{
-                ...(priority ? { priority } : {}),
-                ...(category ? { category } : {}),
-                ...(tag ? { tag } : {}),
-              }}
+              query={query}
             />
           </div>
         </div>
 
         {/* Thread */}
-        <div className={cn("min-w-0", active ? "block" : "hidden lg:block")}>
+        <div className={cn("min-h-0 min-w-0 overflow-hidden", active ? "block" : "hidden md:block")}>
           {active ? (
             <MessageThread
+              key={active.id}
               conversation={active}
+              backHref={`/inbox?${new URLSearchParams(query)}`}
+              demo={!isWhatsAppConfigured()}
               templates={packTemplates.map((t) => ({ id: t.id, name: t.name }))}
               properties={packProperties}
             />

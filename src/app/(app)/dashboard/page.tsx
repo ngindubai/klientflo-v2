@@ -15,7 +15,7 @@ import {
 import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card } from "@/components/ui/card";
-import { UrgencyBadge } from "@/components/dashboard/urgency-badge";
+import { conversationPriority, PRIORITY_STYLES } from "@/lib/conversation-priority";
 import { getDashboardData } from "@/server/dashboard";
 import { formatAED, formatRelativeTime, formatTime } from "@/lib/utils";
 import { humanizeEnum } from "@/lib/constants";
@@ -141,15 +141,15 @@ export default async function DashboardPage() {
       {/* Clickable stat strip — each jumps to its surface. */}
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
-          label="Urgent"
+          label="High priority"
           value={d.counts.urgent}
           accent="urgent"
-          href="/inbox"
+          href="/inbox?priority=high"
         />
         <StatCard
           label="Pending replies"
           value={d.counts.pending}
-          href="/inbox"
+          href="/inbox?status=pending"
         />
         <StatCard
           label="AI suggestions"
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
         <StatCard
           label="Voice notes"
           value={d.counts.voice}
-          href="/inbox"
+          href="/inbox?status=voice"
         />
       </div>
 
@@ -181,7 +181,7 @@ export default async function DashboardPage() {
                 {d.urgentMessages.map((c) => (
                   <QueueItem
                     key={`urgent-${c.id}`}
-                    href="/inbox"
+                    href={`/inbox?c=${c.id}`}
                     icon={AlertTriangle}
                     iconClass="size-4 text-urgency-5"
                     title={convName(c)}
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
                       c.summary ??
                       humanizeEnum(c.classification ?? "new_enquiry")
                     }
-                    badge={<UrgencyBadge level={c.urgency} />}
+                    badge={<span className={`rounded border px-2 py-1 text-[10px] ${PRIORITY_STYLES.high}`}>{conversationPriority(c).reason}</span>}
                     cta="Open chat"
                   />
                 ))}
@@ -197,7 +197,7 @@ export default async function DashboardPage() {
                 {d.pendingReplies.map((c) => (
                   <QueueItem
                     key={`reply-${c.id}`}
-                    href="/inbox"
+                    href={`/inbox?c=${c.id}`}
                     icon={Reply}
                     iconClass="size-4 text-primary"
                     title={convName(c)}
@@ -216,7 +216,7 @@ export default async function DashboardPage() {
                 {d.newVoiceNotes.map((m) => (
                   <QueueItem
                     key={`voice-${m.id}`}
-                    href="/inbox"
+                    href={`/inbox?c=${m.conversationId}`}
                     icon={Mic}
                     iconClass="size-4 text-primary"
                     title={
@@ -261,7 +261,7 @@ export default async function DashboardPage() {
             {d.todaysViewings.map((e) => (
               <Link
                 key={e.id}
-                href="/calendar"
+                href={`/calendar/${e.id}/edit`}
                 className="flex items-start gap-3 px-4 py-3 hover:bg-surface-muted/50"
               >
                 <span className="mt-0.5 inline-flex items-center gap-1 rounded-md bg-primary-muted px-2 py-0.5 text-xs font-semibold text-primary">
@@ -281,7 +281,7 @@ export default async function DashboardPage() {
             {d.todaysMeetings.map((e) => (
               <Link
                 key={e.id}
-                href="/calendar"
+                href={`/calendar/${e.id}/edit`}
                 className="flex items-start gap-3 px-4 py-3 hover:bg-surface-muted/50"
               >
                 <span className="mt-0.5 inline-flex items-center gap-1 rounded-md bg-surface-muted px-2 py-0.5 text-xs font-semibold text-foreground-muted">

@@ -73,7 +73,7 @@ export function OwnersTable({
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="kf-owners-table w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-foreground-muted">
               <th className="w-8 px-2 py-2">
@@ -112,8 +112,10 @@ export function OwnersTable({
                   />
                 </td>
                 <td className="px-2 py-2 align-top">
-                  <div className="font-medium">{o.name}</div>
+                  <div className="break-words font-medium">{o.name}</div>
                   <div className="text-xs text-foreground-muted">{o.phone ?? "—"}</div>
+                  <div className="mt-1 text-xs text-foreground-muted lg:hidden">{[o.building, o.unit ? `Unit ${o.unit}` : null, o.area].filter(Boolean).join(" · ")}</div>
+                  <div className="mt-1 lg:hidden"><NotesCell id={o.id} notes={o.notes} /></div>
                 </td>
                 <td className="px-2 py-2 align-top text-foreground-muted">
                   {o.building ?? "—"}
@@ -128,20 +130,20 @@ export function OwnersTable({
                   <NotesCell id={o.id} notes={o.notes} />
                 </td>
                 <td className="px-2 py-2 align-top">
-                  <div className="flex items-center justify-end gap-1.5">
+                  <div className="flex flex-wrap items-center justify-end gap-1.5">
                     {o.phone && (
                       <>
                         <button
                           onClick={() => setCompose([o.id])}
                           title="Send WhatsApp message"
-                          className="rounded-md border border-border p-1.5 text-emerald-600 hover:bg-surface-muted"
+                          className="rounded-md border border-border p-2 text-emerald-600 hover:bg-surface-muted"
                         >
                           <MessageCircle className="size-4" />
                         </button>
                         <a
                           href={`tel:${o.phone}`}
                           title="Call"
-                          className="rounded-md border border-border p-1.5 text-foreground-muted hover:bg-surface-muted"
+                          className="rounded-md border border-border p-2 text-foreground-muted hover:bg-surface-muted"
                         >
                           <Phone className="size-4" />
                         </a>
@@ -195,7 +197,7 @@ function NotesCell({ id, notes }: { id: string; notes: string | null }) {
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) save();
             if (e.key === "Escape") setEditing(false);
           }}
-          className="w-44 rounded-md border border-border bg-surface px-2 py-1 text-xs outline-none focus:border-primary"
+          className="w-44 max-w-full min-w-0 rounded-md border border-border bg-surface px-2 py-1 text-xs outline-none focus:border-primary"
           placeholder="Add a note…"
         />
         <button

@@ -88,15 +88,15 @@ function classify(text: string): {
   if (!text.trim()) return { classification: "low_priority", urgency: 1 };
   if (/\b(unsubscribe|spam|lottery|crypto giveaway)\b/.test(text))
     return { classification: "spam", urgency: 1 };
-  if (/\b(view|viewing|see the|visit|appointment)\b/.test(text))
+  if (/\b(viewing|visit|appointment|view (?:the |this |an? )?(?:property|apartment|villa|unit)|see the (?:property|apartment|villa|unit))\b/.test(text))
     return { classification: "viewing_request", urgency: 5 };
   if (/\b(contract|mou|form f|sign|deposit|transfer)\b/.test(text))
     return { classification: "contract_stage", urgency: 4 };
-  if (/\b(price|negotiate|offer|discount|lower)\b/.test(text))
+  if (/\b(negotiate|negotiation|offer|counteroffer|discount|lower (?:the )?price|reduce (?:the )?price)\b/.test(text))
     return { classification: "price_negotiation", urgency: 4 };
   if (/\b(passport|emirates id|visa|documents?|ejari)\b/.test(text))
     return { classification: "document_request", urgency: 3 };
-  if (/\b(ready|cash|now|asap|this week|budget)\b/.test(text))
+  if (/\b(ready to (?:buy|purchase|proceed)|cash buyer|make (?:an? )?offer|proceed with (?:the )?purchase)\b/.test(text))
     return { classification: "hot_lead", urgency: 4 };
   return { classification: "new_enquiry", urgency: 3 };
 }

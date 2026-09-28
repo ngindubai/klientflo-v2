@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
-import { sendText } from "@/server/whatsapp";
+import { sendText, isWhatsAppConfigured } from "@/server/whatsapp";
 import { getAnthropic, isAIEnabled, AI_MODEL } from "@/server/ai/client";
 
 /** Send an outbound WhatsApp reply in a conversation. */
@@ -41,11 +41,12 @@ export async function sendReply(conversationId: string, body: string) {
 
   await prisma.conversation.update({
     where: { id: conversationId },
-    data: { awaitingReply: false, lastMessageAt: new Date() },
+    data: { awaitingReply: status === "failed", lastMessageAt: new Date() },
   });
 
   revalidatePath("/inbox");
   revalidatePath("/dashboard");
+  return { status, demo: !isWhatsAppConfigured() };
 }
 
 /** Approve a pending AI-drafted reply: send it and mark it sent. */
@@ -72,10 +73,11 @@ export async function approveDraft(messageId: string) {
   });
   await prisma.conversation.update({
     where: { id: message.conversationId },
-    data: { awaitingReply: false, lastMessageAt: new Date() },
+    data: { awaitingReply: status === "failed", lastMessageAt: new Date() },
   });
   revalidatePath("/inbox");
   revalidatePath("/dashboard");
+  return { status, demo: !isWhatsAppConfigured() };
 }
 
 /** Discard a pending AI-drafted reply without sending. */

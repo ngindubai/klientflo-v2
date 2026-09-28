@@ -25,6 +25,7 @@ export function CommandBar() {
   const router = useRouter();
   const [value, setValue] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [error, setError] = useState("");
   const [result, setResult] = useState<CommandResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,6 +57,8 @@ export function CommandBar() {
     if (!command || isPending) return;
     setValue("");
     startTransition(async () => {
+      setError("");
+      try {
       const res = await runCommand(command);
       if (res.kind === "navigate") {
         setResult(null);
@@ -65,11 +68,12 @@ export function CommandBar() {
       setResult(res);
       // Refresh server components in case a command mutated data (e.g. move_deal).
       router.refresh();
+      } catch { setValue(command); setError("Could not run that command. Please try again."); }
     });
   }
 
   return (
-    <div className="relative flex-1">
+    <div className="relative min-w-0 flex-1">
       <form onSubmit={handleSubmit}>
         <div className="flex items-center gap-2 rounded-[var(--radius-card)] border border-border bg-surface px-3 shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
           <Sparkles className="size-5 shrink-0 text-primary" />
@@ -78,7 +82,7 @@ export function CommandBar() {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={`Ask or command — e.g. “${EXAMPLES[placeholderIndex]}”`}
-            className="h-12 flex-1 bg-transparent text-sm outline-none placeholder:text-foreground-muted"
+            className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-foreground-muted"
             aria-label="AI command bar"
           />
           <kbd className="hidden rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground-muted sm:inline">
@@ -123,6 +127,7 @@ export function CommandBar() {
         </div>
       </form>
 
+      {(error || speech.error) && <div role="status" className="absolute right-0 left-0 z-40 mt-2 rounded-lg border border-border bg-surface p-3 text-xs shadow-lg">{error || speech.error}<button className="ml-2 text-primary underline" onClick={() => { setError(""); speech.clearError(); }}>Dismiss</button></div>}
       {result && (
         <CommandResultPanel result={result} onClose={() => setResult(null)} />
       )}

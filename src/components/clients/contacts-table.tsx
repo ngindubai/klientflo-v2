@@ -21,6 +21,8 @@ export type ContactRow = {
   budgetMax: number | null;
   agencyName: string | null;
   notes: string | null;
+  clientType?: string | null;
+  status?: string | null;
 };
 
 export function ContactsTable({
@@ -30,7 +32,7 @@ export function ContactsTable({
 }: {
   contacts: ContactRow[];
   templates: MessageTemplate[];
-  category: "agent" | "investor";
+  category: "agent" | "investor" | "client";
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [compose, setCompose] = useState<string[] | null>(null);
@@ -64,14 +66,14 @@ export function ContactsTable({
               onClick={() => setCompose([...selected])}
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              <Send className="size-3.5" /> Message {isAgent ? "agents" : "investors"}
+              <Send className="size-3.5" /> Message {category === "client" ? "clients" : isAgent ? "agents" : "investors"}
             </button>
           </div>
         </div>
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="kf-contacts-table w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-foreground-muted">
               <th className="w-8 px-2 py-2">
@@ -86,7 +88,7 @@ export function ContactsTable({
               </th>
               <th className="px-2 py-2 font-medium">Name</th>
               <th className="px-2 py-2 font-medium">{isAgent ? "Agency" : "Looking in"}</th>
-              <th className="px-2 py-2 font-medium">{isAgent ? "Area" : "Ticket"}</th>
+              <th className="px-2 py-2 font-medium">{isAgent ? "Area" : category === "client" ? "Budget" : "Ticket"}</th>
               <th className="px-2 py-2 font-medium">Notes</th>
               <th className="px-2 py-2 text-right font-medium">Contact</th>
             </tr>
@@ -109,10 +111,13 @@ export function ContactsTable({
                   />
                 </td>
                 <td className="px-2 py-2 align-top">
-                  <Link href={`/clients/${c.id}`} className="font-medium hover:text-primary">
+                  <Link href={`/clients/${c.id}`} className="break-words font-medium hover:text-primary">
                     {c.name}
                   </Link>
                   <div className="text-xs text-foreground-muted">{c.phone}</div>
+                  {(c.clientType || c.status) && <div className="mt-1 text-xs capitalize text-foreground-muted">{[c.clientType, c.status].filter(Boolean).join(" · ")}</div>}
+                  <div className="mt-1 text-xs text-foreground-muted md:hidden">{[c.area, c.budgetMax != null ? formatAED(c.budgetMax) : c.agencyName].filter(Boolean).join(" · ")}</div>
+                  <div className="mt-1 lg:hidden"><NotesCell id={c.id} notes={c.notes} /></div>
                 </td>
                 <td className="px-2 py-2 align-top text-foreground-muted">
                   {isAgent ? c.agencyName ?? "—" : c.area ?? "—"}
@@ -128,18 +133,18 @@ export function ContactsTable({
                   <NotesCell id={c.id} notes={c.notes} />
                 </td>
                 <td className="px-2 py-2 align-top">
-                  <div className="flex items-center justify-end gap-1.5">
+                  <div className="flex flex-wrap items-center justify-end gap-1.5">
                     <button
                       onClick={() => setCompose([c.id])}
                       title="Send WhatsApp message"
-                      className="rounded-md border border-border p-1.5 text-emerald-600 hover:bg-surface-muted"
+                      className="rounded-md border border-border p-2 text-emerald-600 hover:bg-surface-muted"
                     >
                       <MessageCircle className="size-4" />
                     </button>
                     <a
                       href={`tel:${c.phone}`}
                       title="Call"
-                      className="rounded-md border border-border p-1.5 text-foreground-muted hover:bg-surface-muted"
+                      className="rounded-md border border-border p-2 text-foreground-muted hover:bg-surface-muted"
                     >
                       <Phone className="size-4" />
                     </a>
@@ -156,7 +161,7 @@ export function ContactsTable({
           recipientIds={compose}
           count={compose.length}
           templates={templates}
-          noun={isAgent ? "agent" : "investor"}
+          noun={category}
           send={sendContactMessages}
           draft={draftContactMessage}
           onClose={() => {
@@ -190,7 +195,7 @@ function NotesCell({ id, notes }: { id: string; notes: string | null }) {
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) save();
             if (e.key === "Escape") setEditing(false);
           }}
-          className="w-44 rounded-md border border-border bg-surface px-2 py-1 text-xs outline-none focus:border-primary"
+          className="w-44 max-w-full min-w-0 rounded-md border border-border bg-surface px-2 py-1 text-xs outline-none focus:border-primary"
           placeholder="Add a note…"
         />
         <button

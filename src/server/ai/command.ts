@@ -1,6 +1,8 @@
 "use server";
 
 import type Anthropic from "@anthropic-ai/sdk";
+import { priorityWhere } from "@/server/inbox-query";
+import { dubaiDateKey } from "@/lib/dubai-time";
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
 import { getAnthropic, isAIEnabled, AI_MODEL } from "@/server/ai/client";
@@ -220,7 +222,7 @@ async function searchProperties(
 
 async function showUrgent(agentId: string): Promise<CommandResult> {
   const convos = await prisma.conversation.findMany({
-    where: { agentId, urgency: { gte: 4 } },
+    where: { agentId, ...priorityWhere("high") },
     orderBy: [{ urgency: "desc" }, { lastMessageAt: "desc" }],
     take: 8,
     include: { client: true },
@@ -261,10 +263,9 @@ async function showPending(agentId: string): Promise<CommandResult> {
 }
 
 async function showTodaysSchedule(agentId: string): Promise<CommandResult> {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const end = new Date();
-  end.setHours(23, 59, 59, 999);
+  const key = dubaiDateKey(new Date());
+  const start = new Date(`${key}T00:00:00+04:00`);
+  const end = new Date(`${key}T23:59:59.999+04:00`);
   const events = await prisma.event.findMany({
     where: { agentId, startsAt: { gte: start, lte: end } },
     orderBy: { startsAt: "asc" },
@@ -447,7 +448,7 @@ async function runViaMock(
 
   if (/\b(open|go to|show me the)\b/.test(t)) {
     const match = NAV_ITEMS.find((n) =>
-      t.includes(n.label.toLowerCase().replace("whatsapp ", "")),
+      t.includes(n.label.toLowerCase().replace("whatsapp ", "")) || t.includes(n.href.slice(1)),
     );
     if (match) return openPage({ href: match.href });
   }
@@ -469,7 +470,7 @@ async function runViaMock(
     return {
       kind: "draft",
       message:
-        "Draft ready (template — connect an API key for AI-written replies).",
+        "Demo draft ready — review before sending.",
       draft:
         "Hi! Thank you for your message — I'll confirm the details and get back to you shortly. Best regards.",
     };
@@ -499,7 +500,7 @@ async function runViaMock(
   return {
     kind: "info",
     message:
-      "I can show urgent messages, pending replies and today's schedule, search clients and properties, move deals, and draft replies. Add an Anthropic API key to unlock full natural-language understanding.",
+      "Try “Open the inbox”, “Show urgent messages”, “Show pending replies”, “Show today’s schedule”, or a property search. Broader AI requests will be available after the approved connection is enabled.",
   };
 }
 

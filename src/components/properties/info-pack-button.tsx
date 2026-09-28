@@ -1,7 +1,8 @@
 "use client";
 
+import { Modal } from "@/components/ui/modal";
 import { useState, useTransition } from "react";
-import { Package, Loader2, Copy, Check, X, Paperclip } from "lucide-react";
+import { Package, Loader2, Copy, Check, Paperclip } from "lucide-react";
 import { generateInfoPack } from "@/server/property-actions";
 import type { InfoPack } from "@/server/info-pack";
 
@@ -30,29 +31,9 @@ export function InfoPackButton({ propertyId }: { propertyId: string }) {
       </button>
 
       {pack && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={() => setPack(null)}
-        >
-          <div
-            className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-[var(--radius-card)] border border-border bg-surface shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <h2 className="text-sm font-semibold">
-                Information pack ({pack.kind === "single" ? "single" : "comparison"})
-              </h2>
-              <button
-                onClick={() => setPack(null)}
-                className="rounded p-1 text-foreground-muted hover:bg-surface-muted"
-                aria-label="Close"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-
+        <Modal title={`Information pack (${pack.kind})`} onClose={() => setPack(null)}>
             <div className="p-4">
-              <pre className="whitespace-pre-wrap rounded-lg bg-surface-muted p-3 font-sans text-sm">
+              <pre className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] rounded-lg bg-surface-muted p-3 font-sans text-sm">
                 {pack.message}
               </pre>
 
@@ -89,12 +70,11 @@ export function InfoPackButton({ propertyId }: { propertyId: string }) {
                   {copied ? "Copied" : "Copy message"}
                 </button>
                 <span className="text-xs text-foreground-muted">
-                  One-click send via WhatsApp arrives in Chunk 12.
+                  Copy into a conversation, or use Sales pack to preview and send a PDF.
                 </span>
               </div>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </>
   );

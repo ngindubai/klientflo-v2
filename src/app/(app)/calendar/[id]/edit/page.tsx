@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { EventForm } from "@/components/calendar/event-form";
 import { EventEditActions } from "@/components/calendar/event-edit-actions";
 import { getEvent, getEventFormOptions } from "@/server/calendar";
-import { toDateTimeLocal } from "@/lib/calendar";
+import { dubaiDateTimeInput } from "@/lib/dubai-time";
 import type { EventInput } from "@/server/event-actions";
 
 export const dynamic = "force-dynamic";
@@ -24,8 +24,8 @@ export default async function EditEventPage({
   const initial: Partial<EventInput> = {
     type: event.type,
     title: event.title,
-    startsAt: toDateTimeLocal(event.startsAt),
-    endsAt: toDateTimeLocal(event.endsAt),
+    startsAt: dubaiDateTimeInput(event.startsAt),
+    endsAt: dubaiDateTimeInput(event.endsAt),
     location: event.location ?? "",
     clientId: event.clientId ?? "",
     propertyId: event.propertyId ?? "",

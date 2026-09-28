@@ -14,11 +14,12 @@ export default async function ClientsPage({
       area={area}
       page={Number(page) || 1}
       basePath="/clients"
+      variant="table"
       config={{
         category: "client",
         title: "Clients",
         description:
-          "Lightweight lead and client records, auto-populated from conversations.",
+          "Buyers, tenants, sellers and landlords — their requirements and next steps in one place.",
         searchPlaceholder: "Search name, phone, email, area…",
         emptyText: "No clients yet — add your first.",
         newHref: "/clients/new",

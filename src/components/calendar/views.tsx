@@ -1,3 +1,4 @@
+import { dubaiDateKey } from "@/lib/dubai-time";
 import Link from "next/link";
 import { EventChip } from "@/components/calendar/event-chip";
 import type { EventWithLinks } from "@/server/calendar";
@@ -13,7 +14,7 @@ import { humanizeEnum } from "@/lib/constants";
 function groupByDay(events: EventWithLinks[]) {
   const map = new Map<string, EventWithLinks[]>();
   for (const e of events) {
-    const key = toISODate(e.startsAt);
+    const key = dubaiDateKey(e.startsAt);
     const list = map.get(key);
     if (list) list.push(e);
     else map.set(key, [e]);
@@ -34,10 +35,8 @@ export function MonthView({
 }) {
   const byDay = groupByDay(events);
   return (
-    <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-surface">
-      {/* Min width keeps day cells usable on phones; the month scrolls
-          horizontally instead of squishing to unreadable columns. */}
-      <div className="min-w-[640px]">
+    <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface">
+      <div>
       <div className="grid grid-cols-7 border-b border-border">
         {WEEKDAY_LABELS.map((d) => (
           <div
@@ -56,13 +55,14 @@ export function MonthView({
             <div
               key={i}
               className={cn(
-                "min-h-24 border-b border-r border-border p-1.5 last:border-r-0",
+                "kf-calendar-cell min-w-0 min-h-32 border-b border-r border-border p-1 md:p-1.5 last:border-r-0",
                 !inMonth && "bg-surface-muted/40",
                 i % 7 === 6 && "border-r-0",
               )}
             >
               <Link
                 href={dayHref(day)}
+                aria-label={day.toLocaleDateString("en-GB", { dateStyle: "full" })}
                 className={cn(
                   "mb-1 inline-flex size-6 items-center justify-center rounded-full text-xs font-medium",
                   isToday(day)
@@ -74,7 +74,7 @@ export function MonthView({
               >
                 {day.getDate()}
               </Link>
-              <div className="space-y-1">
+              <div className="hidden space-y-1 md:block">
                 {dayEvents.slice(0, 3).map((e) => (
                   <EventChip key={e.id} event={e} compact />
                 ))}
@@ -87,6 +87,7 @@ export function MonthView({
                   </Link>
                 )}
               </div>
+              {dayEvents.length > 0 && <Link href={dayHref(day)} className="block rounded bg-primary-muted px-0.5 py-1 text-center text-[10px] font-semibold text-primary md:hidden" aria-label={`${dayEvents.length} events on ${toISODate(day)}`}>{dayEvents.length} <span className="hidden min-[400px]:inline">event{dayEvents.length > 1 ? "s" : ""}</span></Link>}
             </div>
           );
         })}
@@ -106,7 +107,7 @@ export function WeekView({
   const byDay = groupByDay(events);
   const days = weekDays(refDate);
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-7">
+    <div className="grid grid-cols-1 gap-2 lg:grid-cols-7">
       {days.map((day) => {
         const dayEvents = byDay.get(toISODate(day)) ?? [];
         return (

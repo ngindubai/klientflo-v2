@@ -42,7 +42,7 @@ export function PipelineBoard({
   }
 
   return (
-    <div className="-mx-4 overflow-x-auto px-4 pb-4 lg:-mx-6 lg:px-6">
+    <div className="max-w-full overflow-x-auto pb-4">
       <div className="flex gap-3">
         {columns.map((col) => {
           const colDeals = deals.filter((d) => d.stage === col.stage);

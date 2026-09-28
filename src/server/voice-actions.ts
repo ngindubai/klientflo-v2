@@ -27,8 +27,7 @@ export async function transcribeVoiceNote(messageId: string) {
     if (media) transcription = await transcribeAudio(media.data, media.mime);
   }
   if (!transcription) {
-    transcription =
-      "[Voice note — connect WhatsApp + speech-to-text in Settings to auto-transcribe]";
+    return { error: !isWhatsAppConfigured() || !isSpeechConfigured() ? "Voice-note transcription is available after the approved WhatsApp and speech connections are enabled. No transcript has been generated." : "Could not transcribe this voice note. Please try again." };
   }
 
   await prisma.message.update({
@@ -59,7 +58,7 @@ export async function transcribeVoiceNote(messageId: string) {
 
   revalidatePath("/inbox");
   revalidatePath("/dashboard");
-  return transcription;
+  return { transcription };
 }
 
 /** Polish dictated text into a professional WhatsApp message (dictation flow). */
