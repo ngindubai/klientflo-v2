@@ -170,9 +170,9 @@ export default async function ClientDetailPage({
             {client.deals.map((d) => (
               <li key={d.id} className="flex items-center justify-between gap-3 px-2 py-2.5">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
+                  <Link href={`/deals/${d.id}`} className="block truncate text-sm font-medium text-primary hover:underline">
                     {humanizeEnum(d.stage)}
-                  </p>
+                  </Link>
                   <p className="truncate text-xs text-foreground-muted">
                     {d.type === "sale" ? "Sale" : "Rental"}
                     {d.property ? ` · ${d.property.title}` : ""}

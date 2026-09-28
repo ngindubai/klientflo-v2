@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getCurrentAgent } from "@/server/agent";
+import { taskSummary } from "@/lib/deal-workflow";
+import { dubaiDateKey } from "@/lib/dubai-time";
 import {
   SALES_PIPELINE_STAGES,
   RENTAL_PIPELINE_STAGES,
@@ -16,7 +18,7 @@ export async function getPipeline(type: DealType) {
   const agent = await getCurrentAgent();
   const deals = await prisma.deal.findMany({
     where: { agentId: agent.id, type },
-    include: { client: true, property: true },
+    include: { client: true, property: true, tasks: true },
     orderBy: { updatedAt: "desc" },
   });
 
@@ -25,7 +27,7 @@ export async function getPipeline(type: DealType) {
     return {
       stage,
       label: humanizeEnum(stage),
-      deals: stageDeals,
+      deals: stageDeals.map(d => ({ ...d, taskSummary: taskSummary(d.tasks, d.stage, dubaiDateKey(new Date())) })),
       total: stageDeals.reduce((sum, d) => sum + (d.amount ?? 0), 0),
     };
   });
@@ -42,7 +44,7 @@ export async function getOpportunities() {
   const agent = await getCurrentAgent();
   const deals = await prisma.deal.findMany({
     where: { agentId: agent.id },
-    include: { client: true, property: true },
+    include: { client: true, property: true, tasks: true },
     orderBy: { updatedAt: "desc" },
   });
 
@@ -71,6 +73,7 @@ export async function getOpportunities() {
     stageLabel: humanizeEnum(d.stage),
     amount: d.amount,
     updatedAt: d.updatedAt,
+    taskSummary: taskSummary(d.tasks, d.stage, dubaiDateKey(new Date())),
     client: d.client ? { id: d.client.id, name: d.client.name } : null,
     property: d.property
       ? { id: d.property.id, title: d.property.title }
@@ -101,6 +104,7 @@ export type OpportunityCard = {
   stageLabel: string;
   amount: number | null;
   updatedAt: Date;
+  taskSummary: ReturnType<typeof taskSummary>;
   client: { id: string; name: string } | null;
   property: { id: string; title: string } | null;
 };

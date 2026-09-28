@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
   DOCUMENT_CATEGORIES,
   DOCUMENT_TYPES_BY_CATEGORY,
@@ -17,16 +17,32 @@ export function UploadForm({
   clients,
   properties,
   deals,
+  initial,
 }: {
   clients: { id: string; name: string }[];
   properties: { id: string; title: string }[];
-  deals: { id: string; type: string; client: { name: string } | null }[];
+  deals: { id: string; type: string; client: { name: string } | null; property: { title: string } | null }[];
+  initial?: { dealId: string; clientId?: string; propertyId?: string };
 }) {
   const [category, setCategory] = useState<DocumentCategory>("client");
+  const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
   const types = DOCUMENT_TYPES_BY_CATEGORY[category];
 
   return (
-    <form action={uploadDocument} className="space-y-4">
+    <form onSubmit={e => {
+      e.preventDefault();
+      const fd = new FormData(e.currentTarget);
+      setError("");
+      startTransition(async () => {
+        try { await uploadDocument(fd); }
+        catch (err) {
+          if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) throw err;
+          setError(err instanceof Error ? err.message : "Upload failed. Please try again.");
+        }
+      });
+    }} className="space-y-4">
+      {initial && <input type="hidden" name="returnToDeal" value="yes" />}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Category">
           <select
@@ -65,7 +81,7 @@ export function UploadForm({
         </Field>
 
         <Field label="Link to client">
-          <select name="clientId" className={inputClass} defaultValue="">
+          <select name="clientId" className={inputClass} defaultValue={initial?.clientId ?? ""}>
             <option value="">—</option>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -73,7 +89,7 @@ export function UploadForm({
           </select>
         </Field>
         <Field label="Link to property">
-          <select name="propertyId" className={inputClass} defaultValue="">
+          <select name="propertyId" className={inputClass} defaultValue={initial?.propertyId ?? ""}>
             <option value="">—</option>
             {properties.map((p) => (
               <option key={p.id} value={p.id}>{p.title}</option>
@@ -81,11 +97,11 @@ export function UploadForm({
           </select>
         </Field>
         <Field label="Link to deal" full>
-          <select name="dealId" className={inputClass} defaultValue="">
+          <select name="dealId" className={inputClass} defaultValue={initial?.dealId ?? ""}>
             <option value="">—</option>
             {deals.map((d) => (
               <option key={d.id} value={d.id}>
-                {(d.client?.name ?? "Unassigned") + " · " + (d.type === "sale" ? "Sale" : "Rental")}
+                {(d.client?.name ?? "Unassigned") + " · " + (d.type === "sale" ? "Sale" : "Rental") + " · " + (d.property?.title ?? d.id.slice(-6))}
               </option>
             ))}
           </select>
@@ -93,11 +109,13 @@ export function UploadForm({
       </div>
 
       <div className="flex gap-3">
+        {error && <p role="alert" className="text-sm text-urgency-5">{error}</p>}
         <button
           type="submit"
+          disabled={pending}
           className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
         >
-          Upload
+          {pending ? "Uploading…" : "Upload"}
         </button>
       </div>
     </form>
@@ -114,9 +132,9 @@ function Field({
   full?: boolean;
 }) {
   return (
-    <div className={full ? "sm:col-span-2" : undefined}>
-      <label className={labelClass}>{label}</label>
+    <label className={full ? "min-w-0 sm:col-span-2" : "min-w-0"}>
+      <span className={labelClass}>{label}</span>
       {children}
-    </div>
+    </label>
   );
 }

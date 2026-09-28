@@ -3,6 +3,8 @@ import { Plus, KanbanSquare, Building2, User } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { getOpportunities, type OpportunityCard } from "@/server/deals";
 import { formatAED, formatRelativeTime, cn } from "@/lib/utils";
+import { DealDrawer } from "@/components/pipeline/deal-workspace";
+import { getDealWorkspace } from "@/server/deal-workspace";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +33,8 @@ const SECTIONS: {
 function DealRoom({ deal }: { deal: OpportunityCard }) {
   return (
     <Link
-      href={`/pipeline?type=${deal.type}`}
+      href={`/opportunities?deal=${deal.id}`}
+      scroll={false}
       className="group flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-surface p-4 transition-colors hover:border-primary/40 hover:bg-surface-muted/40"
     >
       <div className="flex items-start justify-between gap-2">
@@ -69,18 +72,24 @@ function DealRoom({ deal }: { deal: OpportunityCard }) {
           <span className="text-sm font-semibold">{formatAED(deal.amount)}</span>
         )}
       </div>
+      <div className="border-t border-border pt-2 text-xs">
+        <p className="line-clamp-2 text-foreground-muted">{deal.taskSummary.next ? `Next: ${deal.taskSummary.next.title}` : "Open deal to review tasks"}</p>
+        <p className="mt-1 flex flex-wrap gap-2"><span>{deal.taskSummary.open} outstanding</span>{deal.taskSummary.overdue > 0 && <span className="font-medium text-urgency-5">{deal.taskSummary.overdue} overdue</span>}{deal.taskSummary.blocked > 0 && <span className="font-medium text-urgency-5">{deal.taskSummary.blocked} blocked</span>}</p>
+      </div>
     </Link>
   );
 }
 
-export default async function OpportunitiesPage() {
+export default async function OpportunitiesPage({ searchParams }: { searchParams: Promise<{ deal?: string }> }) {
+  const { deal: selectedId } = await searchParams;
   const { groups, count } = await getOpportunities();
+  const selected = selectedId ? await getDealWorkspace(selectedId) : null;
 
   return (
     <>
       <PageHeader
         title="Opportunities"
-        description="Every live deal as its own room — grouped by where it stands, not by stage."
+        description="Open a deal to review its progress, outstanding tasks and documents."
         action={
           <div className="flex items-center gap-2">
             <Link
@@ -131,6 +140,7 @@ export default async function OpportunitiesPage() {
           })}
         </div>
       )}
+      {selectedId && <DealDrawer deal={selected} returnHref="/opportunities" />}
     </>
   );
 }

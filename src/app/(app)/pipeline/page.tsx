@@ -5,6 +5,8 @@ import { PipelineBoard } from "@/components/pipeline/pipeline-board";
 import { getPipeline, stagesFor } from "@/server/deals";
 import { cn } from "@/lib/utils";
 import type { DealType } from "@/lib/constants";
+import { DealDrawer } from "@/components/pipeline/deal-workspace";
+import { getDealWorkspace } from "@/server/deal-workspace";
 
 export const dynamic = "force-dynamic";
 
@@ -16,12 +18,13 @@ const TABS: { type: DealType; label: string }[] = [
 export default async function PipelinePage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string }>;
+  searchParams: Promise<{ type?: string; deal?: string }>;
 }) {
-  const { type: typeParam } = await searchParams;
+  const { type: typeParam, deal: selectedId } = await searchParams;
   const type: DealType = typeParam === "rental" ? "rental" : "sale";
   const { columns, count } = await getPipeline(type);
   const stages = stagesFor(type);
+  const selected = selectedId ? await getDealWorkspace(selectedId) : null;
 
   return (
     <>
@@ -69,6 +72,8 @@ export default async function PipelinePage({
               id: d.id,
               stage: d.stage,
               amount: d.amount,
+              type: d.type,
+              taskSummary: d.taskSummary,
               client: d.client ? { id: d.client.id, name: d.client.name } : null,
               property: d.property
                 ? { id: d.property.id, title: d.property.title }
@@ -78,6 +83,7 @@ export default async function PipelinePage({
           stages={stages}
         />
       )}
+      {selectedId && <DealDrawer deal={selected} returnHref={`/pipeline?type=${type}`} />}
     </>
   );
 }

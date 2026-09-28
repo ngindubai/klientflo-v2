@@ -308,7 +308,7 @@ export default async function DashboardPage() {
             {d.dealsNeedingAttention.map((deal) => (
               <Link
                 key={deal.id}
-                href={`/pipeline?type=${deal.type}`}
+                href={`/deals/${deal.id}`}
                 className="flex items-start gap-3 px-4 py-3 hover:bg-surface-muted/50"
               >
                 <div className="min-w-0 flex-1">

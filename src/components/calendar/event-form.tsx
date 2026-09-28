@@ -41,6 +41,7 @@ export function EventForm({
     clientId: initial.clientId ?? "",
     propertyId: initial.propertyId ?? "",
     notes: initial.notes ?? "",
+    dealId: initial.dealId ?? "",
   });
 
   const set = (key: keyof EventInput) => (
@@ -76,6 +77,7 @@ export function EventForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {form.dealId && <input type="hidden" name="dealId" value={form.dealId} />}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Type">
           <select className={inputClass} name="type" value={form.type} onChange={set("type")}>

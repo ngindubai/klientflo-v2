@@ -15,6 +15,8 @@ import {
   type ClientType,
 } from "@/lib/constants";
 import { formatTime } from "@/lib/utils";
+import { setDealStage } from "@/server/deal-actions";
+import { dealStages } from "@/lib/deal-workflow";
 
 // --- Tool definitions ----------------------------------------------------
 
@@ -308,7 +310,7 @@ async function moveDeal(
     };
   }
 
-  const deal = await prisma.deal.findFirst({
+  const deals = await prisma.deal.findMany({
     where: {
       agentId,
       client: { name: { contains: clientName, mode: "insensitive" } },
@@ -316,7 +318,9 @@ async function moveDeal(
     },
     include: { client: true },
     orderBy: { updatedAt: "desc" },
+    take: 2,
   });
+  const deal = deals[0];
   if (!deal) {
     return {
       kind: "info",
@@ -324,10 +328,9 @@ async function moveDeal(
     };
   }
 
-  await prisma.deal.update({
-    where: { id: deal.id },
-    data: { stage },
-  });
+  if (deals.length > 1) return { kind: "navigate", href: "/opportunities", message: `More than one active deal matches “${clientName}”. Open the specific deal to change its stage.` };
+  if (!dealStages(deal.type).includes(stage)) return { kind: "info", message: `That stage is not part of this deal's ${deal.type} pipeline.` };
+  await setDealStage(deal.id, stage);
 
   return {
     kind: "info",

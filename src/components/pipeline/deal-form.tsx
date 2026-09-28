@@ -32,6 +32,7 @@ export function DealForm({
     amount: "",
     stage: "new_enquiry",
     notes: "",
+    includeChecklist: true,
   });
 
   const stages =
@@ -65,7 +66,11 @@ export function DealForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Pipeline">
-          <select className={inputClass} value={form.type} onChange={set("type")}>
+          <select className={inputClass} value={form.type} onChange={e => {
+            const type = e.target.value;
+            const valid: readonly string[] = type === "rental" ? RENTAL_PIPELINE_STAGES : SALES_PIPELINE_STAGES;
+            setForm(f => ({ ...f, type, stage: valid.includes(f.stage ?? "") ? f.stage : "new_enquiry" }));
+          }}>
             {DEAL_TYPES.map((t) => (
               <option key={t} value={t}>
                 {t === "sale" ? "Sales" : "Rental"}
@@ -104,6 +109,7 @@ export function DealForm({
         </Field>
       </div>
 
+      <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm"><input type="checkbox" checked={form.includeChecklist !== false} onChange={e => setForm(f => ({ ...f, includeChecklist: e.target.checked }))} className="mt-0.5 size-4 accent-primary" /><span>Start with an editable suggested checklist<span className="mt-1 block text-xs text-foreground-muted">Tasks are added from the selected stage onwards. Set owners and dates after creating the deal.</span></span></label>
       {error && (
         <p className="rounded-lg bg-urgency-5/10 px-3 py-2 text-sm text-urgency-5">{error}</p>
       )}
@@ -138,9 +144,9 @@ function Field({
   full?: boolean;
 }) {
   return (
-    <div className={full ? "sm:col-span-2" : undefined}>
-      <label className={labelClass}>{label}</label>
+    <label className={full ? "min-w-0 sm:col-span-2" : "min-w-0"}>
+      <span className={labelClass}>{label}</span>
       {children}
-    </div>
+    </label>
   );
 }

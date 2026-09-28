@@ -30,6 +30,7 @@ export default async function EditEventPage({
     clientId: event.clientId ?? "",
     propertyId: event.propertyId ?? "",
     notes: event.notes ?? "",
+    dealId: event.dealId ?? "",
   };
 
   return (

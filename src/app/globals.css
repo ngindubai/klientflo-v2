@@ -1,4 +1,21 @@
 @import "tailwindcss";
+
+.kf-deal-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  width: min(100vw, 780px);
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  border: 0;
+  padding: 0;
+  background: var(--background);
+  color: var(--foreground);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.kf-deal-drawer::backdrop { background: rgb(0 0 0 / 35%); }
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*

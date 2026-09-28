@@ -95,7 +95,7 @@ export function Sidebar({
               {group.items.map((item) => {
                 const grouped = (item.href === "/clients" && ["/clients", "/agents", "/investors", "/owners"].some(p=>pathname === p || pathname.startsWith(p+"/"))) ||
                   (item.href === "/documents" && pathname.startsWith("/storage")) ||
-                  (item.href === "/opportunities" && pathname.startsWith("/pipeline"));
+                  (item.href === "/opportunities" && (pathname.startsWith("/pipeline") || pathname.startsWith("/deals")));
                 const active = grouped ||
                   pathname === item.href ||
                   pathname.startsWith(item.href + "/");

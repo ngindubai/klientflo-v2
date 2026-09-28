@@ -394,10 +394,13 @@ model Event {
   client     Contact?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
   propertyId String?
   property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  dealId     String?
+  deal       Deal?     @relation(fields: [dealId], references: [id], onDelete: SetNull)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
   @@index([agentId, startsAt])
+  @@index([dealId])
 }
 
 // --- Documents -----------------------------------------------------------
@@ -442,8 +445,41 @@ model Deal {
   updatedAt  DateTime  @updatedAt
 
   documents Document[]
+  tasks     DealTask[]
+  activity  DealActivity[]
+  events    Event[]
 
   @@index([agentId, type, stage])
+}
+
+model DealTask {
+  id          String    @id @default(cuid())
+  dealId      String
+  deal        Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  title       String
+  notes       String?
+  assignee    String?
+  stage       String?
+  dueAt       DateTime? @db.Date
+  status      String    @default("pending") // pending | done | dismissed
+  blocked     Boolean   @default(false)
+  templateKey String?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([dealId, templateKey])
+  @@index([dealId, status, dueAt])
+}
+
+model DealActivity {
+  id        String   @id @default(cuid())
+  dealId    String
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  summary   String
+  createdAt DateTime @default(now())
+
+  @@index([dealId, createdAt])
 }
 
 // --- AI suggested actions (dashboard) -----------------------------------

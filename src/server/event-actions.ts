@@ -16,6 +16,7 @@ export type EventInput = {
   notes?: string;
   clientId?: string;
   propertyId?: string;
+  dealId?: string;
 };
 
 const DEFAULT_DURATION: Record<string, number> = {
@@ -53,6 +54,7 @@ function buildData(input: EventInput) {
     notes: clean(input.notes),
     clientId: clean(input.clientId),
     propertyId: clean(input.propertyId),
+    dealId: clean(input.dealId),
   };
 }
 
@@ -61,8 +63,10 @@ export async function createEvent(input: EventInput) {
   if (!input.title?.trim() || !input.startsAt) {
     throw new Error("Title and start time are required.");
   }
+  if (input.dealId && !await prisma.deal.findFirst({ where: { id: input.dealId, agentId: agent.id } })) throw new Error("Deal not found.");
   await prisma.event.create({ data: { agentId: agent.id, ...buildData(input) } });
   revalidatePath("/calendar");
+  if (input.dealId) { revalidatePath(`/deals/${input.dealId}`); redirect(`/deals/${input.dealId}`); }
   redirect("/calendar");
 }
 
@@ -72,8 +76,11 @@ export async function updateEvent(id: string, input: EventInput) {
     where: { id, agentId: agent.id },
   });
   if (!existing) throw new Error("Event not found.");
-  await prisma.event.update({ where: { id }, data: buildData(input) });
+  if (input.dealId && !await prisma.deal.findFirst({ where: { id: input.dealId, agentId: agent.id } })) throw new Error("Deal not found.");
+  const data = buildData({ ...input, dealId: existing.dealId ?? input.dealId });
+  await prisma.event.update({ where: { id }, data });
   revalidatePath("/calendar");
+  if (data.dealId) { revalidatePath(`/deals/${data.dealId}`); redirect(`/deals/${data.dealId}`); }
   redirect("/calendar");
 }
 

@@ -48,7 +48,7 @@ export async function getDocument(id: string) {
   return prisma.document.findFirst({ where: { id, agentId: agent.id } });
 }
 
-export async function getDocumentFormOptions() {
+export async function getDocumentFormOptions(includeDealId?: string) {
   const agent = await getCurrentAgent();
   const [clients, properties, deals] = await Promise.all([
     prisma.contact.findMany({
@@ -62,8 +62,8 @@ export async function getDocumentFormOptions() {
       orderBy: { title: "asc" },
     }),
     prisma.deal.findMany({
-      where: { agentId: agent.id, stage: { notIn: ["closed_won", "closed_lost"] } },
-      select: { id: true, type: true, client: { select: { name: true } } },
+      where: { agentId: agent.id, OR: [{ stage: { notIn: ["closed_won", "closed_lost"] } }, ...(includeDealId ? [{ id: includeDealId }] : [])] },
+      select: { id: true, type: true, client: { select: { name: true } }, property: { select: { title: true } } },
       orderBy: { updatedAt: "desc" },
     }),
   ]);

@@ -36,6 +36,12 @@ export async function uploadDocument(formData: FormData) {
 
   const expiresRaw = field(formData, "expiresAt");
   const expiresAt = expiresRaw ? new Date(expiresRaw) : null;
+  const dealId = field(formData, "dealId");
+  const clientId = field(formData, "clientId");
+  const propertyId = field(formData, "propertyId");
+  if (dealId && !await prisma.deal.findFirst({ where: { id: dealId, agentId: agent.id } })) throw new Error("Deal not found.");
+  if (clientId && !await prisma.contact.findFirst({ where: { id: clientId, agentId: agent.id } })) throw new Error("Client not found.");
+  if (propertyId && !await prisma.property.findFirst({ where: { id: propertyId, agentId: agent.id } })) throw new Error("Property not found.");
 
   const document = await prisma.document.create({
     data: {
@@ -45,9 +51,9 @@ export async function uploadDocument(formData: FormData) {
       name: field(formData, "name") ?? file.name,
       fileUrl: "",
       expiresAt: expiresAt && !Number.isNaN(expiresAt.getTime()) ? expiresAt : null,
-      clientId: field(formData, "clientId"),
-      dealId: field(formData, "dealId"),
-      propertyId: field(formData, "propertyId"),
+      clientId,
+      dealId,
+      propertyId,
     },
   });
 
@@ -64,6 +70,8 @@ export async function uploadDocument(formData: FormData) {
 
   revalidatePath("/documents");
   revalidatePath("/dashboard");
+  if (dealId) revalidatePath(`/deals/${dealId}`);
+  if (dealId && field(formData, "returnToDeal") === "yes") redirect(`/deals/${dealId}`);
   redirect("/documents");
 }
 

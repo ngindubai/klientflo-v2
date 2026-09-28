@@ -20,28 +20,29 @@ export function PipelineBoard({
   stages: readonly string[];
 }) {
   // Flatten to a single source of truth so cards can move between columns.
-  const [deals, setDeals] = useState<BoardDeal[]>(() =>
-    columns.flatMap((c) => c.deals),
-  );
+  const deals = columns.flatMap(c => c.deals);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState("");
 
   function move(dealId: string, stage: string) {
     const current = deals.find((d) => d.id === dealId);
-    if (!current || current.stage === stage) return;
-    const prev = deals;
-    setDeals((ds) => ds.map((d) => (d.id === dealId ? { ...d, stage } : d)));
+    if (pending || !current || current.stage === stage) return;
+    setError("");
     startTransition(async () => {
       try {
         await setDealStage(dealId, stage);
-      } catch {
-        setDeals(prev); // revert on failure
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not move this deal. Please try again.");
       }
     });
   }
 
   return (
+    <>
+    {error && <p role="alert" className="mb-3 rounded-lg bg-urgency-5/10 p-3 text-sm text-urgency-5">{error}</p>}
+    <p role="status" className={pending ? "mb-3 text-sm text-primary" : "sr-only"}>{pending ? "Updating deal stage…" : ""}</p>
     <div className="max-w-full overflow-x-auto pb-4">
       <div className="flex gap-3">
         {columns.map((col) => {
@@ -96,6 +97,7 @@ export function PipelineBoard({
                       onMove={move}
                       onDragStart={setDragId}
                       dragging={dragId === deal.id}
+                      pending={pending}
                     />
                   ))
                 )}
@@ -105,5 +107,6 @@ export function PipelineBoard({
         })}
       </div>
     </div>
+    </>
   );
 }
